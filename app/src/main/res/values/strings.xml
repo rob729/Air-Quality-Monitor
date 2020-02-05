@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">AQI</string>
+    <string name="location_required_error">Location services must be enabled for this game.</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
