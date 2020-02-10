@@ -4,5 +4,8 @@
     <color name="colorPrimaryDark">#FAFAFA</color>
     <color name="colorAccent">#42A5F5</color>
 
+    <color name="textColor">#000000</color>
+    <color name="bgColor">#FAFAFA</color>
+
     <color name="bg">#BDBBBB</color>
 </resources>

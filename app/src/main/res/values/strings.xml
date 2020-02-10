@@ -4,4 +4,11 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="location">Current Location: %1$s</string>
+    <string name="conc">%1$s \n %2$s</string>
+    <string name="co">CO</string>
+    <string name="pm_10">PM 10</string>
+    <string name="pm_2_5">PM 2.5</string>
+    <string name="aqi">AQI</string>
 </resources>

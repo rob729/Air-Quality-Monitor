@@ -1,4 +1,4 @@
-package com.robin729.aqi.Network
+package com.robin729.aqi.network
 
 import com.robin729.aqi.model.Info
 import retrofit2.Call
