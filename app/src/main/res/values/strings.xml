@@ -1,14 +1,22 @@
 <resources>
     <string name="app_name">AQI</string>
-    <string name="location_required_error">Location services must be enabled for this game.</string>
+    <string name="location_required_error">Location services must be enabled for this app.</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="location">Current Location: %1$s</string>
+    <string name="location">Location: %1$s</string>
+    <string name="temp">%1$s \u00b0C</string>
     <string name="conc">%1$s \n %2$s</string>
     <string name="co">CO</string>
     <string name="pm_10">PM 10</string>
     <string name="pm_2_5">PM 2.5</string>
     <string name="aqi">AQI</string>
+    <string name="air_quality_monitor">Air Quality Monitor</string>
+    <string name="location_warning">Allow air quality monitor to turn on your phone GPS for accurate data</string>
+    <string name="turn_gps">Turn on GPS</string>
+    <string name="gps_turned_off">GPS turned off</string>
+    <string name="text_no_connectivity">No Connection</string>
+    <string name="text_connectivity">Back Online</string>
+    <string name="loading">Loading.....</string>
 </resources>

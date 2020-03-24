@@ -2,12 +2,13 @@ package com.robin729.aqi
 
 import android.location.Geocoder
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.robin729.aqi.model.Info
+import com.robin729.aqi.model.weather.WeatherData
 import com.robin729.aqi.network.AqiApi
+import com.robin729.aqi.network.WeathersApi
 import com.robin729.aqi.util.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,11 @@ class AqiViewModel : ViewModel() {
 
     val aqi: LiveData<Info>
         get() = _aqi
+
+    private val _weather = MutableLiveData<WeatherData>()
+
+    val weather: LiveData<WeatherData>
+        get() = _weather
 
     private val _location = MutableLiveData<String>()
 
@@ -43,7 +49,6 @@ class AqiViewModel : ViewModel() {
     fun fetchRepos(lat: Double?, long: Double?, geocoder: Geocoder) {
         _loading.value = true
 
-
         CoroutineScope(Dispatchers.IO).launch {
             val request = AqiApi().initalizeRetrofit()
                 .getApi("current-conditions?lat=$lat&lon=$long&key=${Util.apiKey}&features=${Util.features}")
@@ -57,10 +62,15 @@ class AqiViewModel : ViewModel() {
                             _aqiLoadError.value = false
                             _aqi.value = response.body()
                             _loading.value = false
-                            _location.value =  geocoder.getFromLocation(lat!!, long!!, 1)[0].subLocality + ", " + geocoder.getFromLocation(
-                                lat, long, 1)[0].subAdminArea
+                            _location.value = geocoder.getFromLocation(
+                                lat!!,
+                                long!!,
+                                1
+                            )[0].subLocality + ", " + geocoder.getFromLocation(
+                                lat, long, 1
+                            )[0].subAdminArea
 
-                            Log.e("TAG", response.message())
+                            Log.e("TAG", response.message() + "ViewModel")
                         }
 
                         override fun onFailure(call: Call<Info>, t: Throwable) {
@@ -78,5 +88,40 @@ class AqiViewModel : ViewModel() {
             }
         }
 
+    }
+
+    fun fetchWeather(lat: Double?, long: Double?) {
+        _loading.value = true
+        CoroutineScope(Dispatchers.IO).launch {
+            val request = WeathersApi().initalizeRetrofit()
+                .getApi("weather?lat=$lat&lon=$long&appid=${Util.weatherKey}&units=metric")
+
+            withContext(Dispatchers.IO) {
+                try {
+                    request.enqueue(object : Callback<WeatherData> {
+
+                        override fun onResponse(
+                            call: Call<WeatherData>,
+                            response: Response<WeatherData>
+                        ) {
+                            _weather.value = response.body()
+                            _loading.value = false
+                        }
+
+                        override fun onFailure(call: Call<WeatherData>, t: Throwable) {
+                            _loading.value = false
+                            Log.e("TAG", t.message)
+                        }
+
+                    })
+
+                } catch (e: Exception) {
+                    Log.e(
+                        "MainActicity",
+                        "Exception ${e.message}"
+                    )
+                }
+            }
+        }
     }
 }

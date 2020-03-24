@@ -6,6 +6,10 @@
 
     <color name="textColor">#000000</color>
     <color name="bgColor">#FAFAFA</color>
+    <color name="secondary_text">#828282</color>
+
+    <color name="colorStatusConnected">#43A047</color>
+    <color name="colorStatusNotConnected">#D32F2F</color>
 
     <color name="bg">#BDBBBB</color>
 </resources>

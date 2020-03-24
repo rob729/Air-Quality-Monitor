@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#303030</color>
-    <color name="colorPrimaryDark">#303030</color>
+    <color name="colorPrimary">#202125</color>
+    <color name="colorPrimaryDark">#202125</color>
     <color name="colorAccent">#64b5f6</color>
 
     <color name="bg">#BDBBBB</color>
 
+    <color name="colorStatusConnected">#43A047</color>
+    <color name="colorStatusNotConnected">#D32F2F</color>
+
     <color name="textColor">#FFFFFF</color>
-    <color name="bgColor">#303030</color>
+    <color name="bgColor">#202125</color>
+    <color name="secondary_text">#CCC8C8</color>
+
 </resources>

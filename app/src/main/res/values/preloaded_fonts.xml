@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="preloaded_fonts" translatable="false">
+        <item>@font/berkshire_swash</item>
         <item>@font/montserrat</item>
         <item>@font/montserrat_bold</item>
+        <item>@font/pacifico</item>
         <item>@font/roboto</item>
         <item>@font/roboto_slab</item>
     </array>
