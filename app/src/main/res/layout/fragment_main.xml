@@ -13,6 +13,52 @@
         android:background="@color/bgColor"
         android:orientation="vertical">
 
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+            android:background="@color/colorPrimary">
+
+            <FrameLayout
+                android:id="@+id/toolbar_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?android:attr/actionBarSize"
+                    app:title=" " >
+
+                    <TextView
+                        android:id="@+id/title"
+                        style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/pacifico"
+                        android:gravity="center"
+                        android:text="@string/air_quality_monitor"
+                        android:textColor="@color/textColor"
+                        android:textSize="22sp" />
+                </androidx.appcompat.widget.Toolbar>
+
+                <com.ferfalk.simplesearchview.SimpleSearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/bgColor"
+                    app:searchBackground="@color/bgColor"
+                    app:hintColor="@color/secondary_text"
+                    app:backIconTint="@color/textColor"
+                    android:inputType="textCapSentences"
+                    app:iconsTint="@color/textColor"
+                    android:textColor="@color/textColor"/>
+            </FrameLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
         <LinearLayout
             android:id="@+id/networkStatusLayout"
             style="@style/StatusView"

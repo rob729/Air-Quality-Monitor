@@ -5,6 +5,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <string name="enable_gps">Enable GPS</string>
+    <string name="required_for_this_app">Required for this app</string>
+    <string name="enable_now">Enable Now</string>
+    <string name="give_location_permission">Give Location Permission</string>
+    <string name="allow_now">Allow Now</string>
     <string name="location">Location: %1$s</string>
     <string name="temp">%1$s \u00b0C</string>
     <string name="conc">%1$s \n %2$s</string>

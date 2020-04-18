@@ -1,4 +1,4 @@
-package com.robin729.aqi.util
+package com.robin729.aqi.utils
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -15,10 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Util {
-    val apiKey = "68d35d5126a044df9d907e51812de2d6"
-    val weatherKey = "16c9ee9ca759661618772f12fca1ac88"
-    val features =
-        "breezometer_aqi,local_aqi,health_recommendations,sources_and_effects,pollutants_concentrations,pollutants_aqi_information"
 
     fun hasNetwork(ctx: Context?): Boolean {
         val connectivityManager =

@@ -60,9 +60,11 @@ dependencies {
 
     implementation 'com.airbnb.android:lottie:3.3.1'
 
-    // navigation ccomponents
+    // navigation components
     implementation 'androidx.navigation:navigation-fragment-ktx:2.2.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.2.1'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+    implementation 'com.github.Ferfalk:SimpleSearchView:0.1.5'
 
 }

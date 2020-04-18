@@ -9,7 +9,8 @@ import com.robin729.aqi.model.Info
 import com.robin729.aqi.model.weather.WeatherData
 import com.robin729.aqi.network.AqiApi
 import com.robin729.aqi.network.WeathersApi
-import com.robin729.aqi.util.Util
+import com.robin729.aqi.utils.Constants
+import com.robin729.aqi.utils.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,7 +52,7 @@ class AqiViewModel : ViewModel() {
 
         CoroutineScope(Dispatchers.IO).launch {
             val request = AqiApi().initalizeRetrofit()
-                .getApi("current-conditions?lat=$lat&lon=$long&key=${Util.apiKey}&features=${Util.features}")
+                .getApi("current-conditions?lat=$lat&lon=$long&key=${Constants.API_KEY}&features=${Constants.FEATURES}")
 
             withContext(Dispatchers.IO) {
 
@@ -94,7 +95,7 @@ class AqiViewModel : ViewModel() {
         _loading.value = true
         CoroutineScope(Dispatchers.IO).launch {
             val request = WeathersApi().initalizeRetrofit()
-                .getApi("weather?lat=$lat&lon=$long&appid=${Util.weatherKey}&units=metric")
+                .getApi("weather?lat=$lat&lon=$long&appid=${Constants.WEATHER_KEY}&units=metric")
 
             withContext(Dispatchers.IO) {
                 try {

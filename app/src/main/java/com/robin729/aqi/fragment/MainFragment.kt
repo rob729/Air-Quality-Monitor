@@ -1,48 +1,39 @@
 package com.robin729.aqi.fragment
 
-
-import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
-import android.content.Intent
-import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.text.Html
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
-import com.google.android.material.snackbar.Snackbar
+import com.ferfalk.simplesearchview.SimpleSearchView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.robin729.aqi.AqiViewModel
 import com.robin729.aqi.R
-import com.robin729.aqi.util.Util
-import com.robin729.aqi.util.Util.getColorRes
+import com.robin729.aqi.utils.PermissionUtils
+import com.robin729.aqi.utils.Util
+import com.robin729.aqi.utils.Util.getColorRes
 import kotlinx.android.synthetic.main.fragment_main.*
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
+import kotlin.math.roundToInt
 
-/**
- * A simple [Fragment] subclass.
- */
-
-private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-val ANIMATION_DURATION = 1000.toLong()
 
 class MainFragment : Fragment() {
+
+    private val ANIMATION_DURATION = 1000.toLong()
 
     private val aqiViewModel: AqiViewModel by lazy {
         ViewModelProvider(this).get(AqiViewModel::class.java)
@@ -58,13 +49,8 @@ class MainFragment : Fragment() {
         override fun onLocationResult(p0: LocationResult?) {
             super.onLocationResult(p0)
             if (Util.hasNetwork(context)) {
-                val newLat = BigDecimal(p0?.locations?.get(0)?.latitude!!).setScale(
-                    2,
-                    RoundingMode.HALF_EVEN
-                ).toDouble()
-                val newLong =
-                    BigDecimal(p0.locations[0]?.longitude!!).setScale(2, RoundingMode.HALF_EVEN)
-                        .toDouble()
+                val newLat = p0?.locations?.get(0)?.latitude!!
+                val newLong = p0.locations[0]?.longitude!!
                 if (lat != newLat && long != newLong) {
                     Log.e("TAG", "$lat and $newLat")
                     Log.e("TAG", "$long and $newLong")
@@ -87,12 +73,16 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        locationCheck()
+
+        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_main, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        (activity as AppCompatActivity).actionBar?.setDisplayShowTitleEnabled(false)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             txt_no2.text =
@@ -118,7 +108,7 @@ class MainFragment : Fragment() {
         aqiViewModel.weather.observe(viewLifecycleOwner, Observer {
             Log.e("TAG", "${it.time} time")
             weather_icon.setImageResource(Util.getArtForWeatherCondition(it.weather[0].id))
-            temp.text = resources.getString(R.string.temp, it.main.temp.toString())
+            temp.text = resources.getString(R.string.temp, it.main.temp.roundToInt().toString())
             date.text = Util.formatDate(it.time)
             weather_description.text = it.weather[0].desp
         })
@@ -156,91 +146,71 @@ class MainFragment : Fragment() {
             general_recom.text = it.data.recommendations.general
             Log.e("TAG", it.data.index.details.color + "vv")
         })
+
+        searchView.setOnQueryTextListener(object : SimpleSearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (Util.hasNetwork(context) && Geocoder.isPresent()) {
+                    val gc = Geocoder(context)
+                    val addresses: List<Address> = gc.getFromLocationName(query, 4)
+                    for (a in addresses) {
+                        if (a.hasLatitude() && a.hasLongitude()) {
+                            aqiViewModel.fetchRepos(a.latitude, a.longitude, geocoder)
+                            aqiViewModel.fetchWeather(a.latitude, a.longitude)
+                            break
+                        }
+                    }
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextCleared(): Boolean {
+                return false
+            }
+
+        })
     }
 
-    private fun locationCheck() {
-        if (ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            checkDeviceLocationSettings()
+    override fun onStart() {
+        super.onStart()
+        if (PermissionUtils.isLocationEnabled(context!!)) {
+            locationRequest.run {
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                fastestInterval = 300000
+                interval = 600000
+                smallestDisplacement = 800f
+            }
+            fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+
         } else {
-            Log.e("TAG", "failed")
+            PermissionUtils.showGPSNotEnableDialog(context!!)
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        view!!.isFocusableInTouchMode = true
+        view!!.requestFocus()
+        view!!.setOnKeyListener { v, keyCode, event ->
+            Log.e("TAG", "${searchView.isSearchOpen}  onBackpres")
 
-    private fun checkDeviceLocationSettings() {
-        locationRequest.run {
-            priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
-            fastestInterval = 30000
-            interval = 60000
-        }
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val locationSettingsResponseTask = LocationServices.getSettingsClient(requireActivity())
-            .checkLocationSettings(builder.build())
-
-        locationSettingsResponseTask.addOnCompleteListener {
-            Log.e("TAG", "location success")
-            it.addOnSuccessListener { it1 ->
-                val states = it1.locationSettingsStates
-                if (states.isLocationPresent) {
-                    fusedLocationProviderClient.requestLocationUpdates(
-                        locationRequest,
-                        locationCallback,
-                        Looper.getMainLooper()
-                    )
-
-                    Log.e("TAG", "success")
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+                if (searchView.isSearchOpen) {
+                    searchView.closeSearch()
+                    true
+                } else {
+                    false
                 }
-            }
+                // handle back button
+            } else false
         }
-
-
-        locationSettingsResponseTask.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
-                try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-                    exception.startResolutionForResult(
-                        activity!!,
-                        REQUEST_TURN_DEVICE_LOCATION_ON
-                    )
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d("TAG", "Error geting location settings resolution: " + sendEx.message)
-                }
-            } else {
-                Snackbar.make(
-                    parent_layout,
-                    resources.getString(R.string.location_required_error),
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettings()
-                }.setActionTextColor(Color.rgb(17, 122, 101)).show()
-            }
-        }
-
-//        locationSettingsResponseTask.addOnCompleteListener {
-//
-//            Log.e("TAG", "complete")
-//            if (it.isSuccessful) {
-//                fusedLocationProviderClient.requestLocationUpdates(
-//                    locationRequest,
-//                    locationCallback,
-//                    Looper.getMainLooper()
-//                )
-//                Log.e("TAG", "success")
-//            } else {
-//                Snackbar.make(
-//                    parent_layout,
-//                    resources.getString(R.string.location_required_error),
-//                    Snackbar.LENGTH_INDEFINITE
-//                ).setAction(android.R.string.ok) {
-//                    checkDeviceLocationSettings()
-//                }.setActionTextColor(Color.rgb(17, 122, 101)).show()
-//            }
-//        }
     }
 
     private fun handleNetworkChanges() {
@@ -279,32 +249,10 @@ class MainFragment : Fragment() {
         })
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.e("TAG", "result")
-//        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
-//            Log.e("TAG", " Activity Result")
-//        } else {
-//            Log.e("TAG", " Activity Result not")
-//        }
-
-        when (requestCode) {
-            REQUEST_TURN_DEVICE_LOCATION_ON -> when (resultCode) {
-                Activity.RESULT_OK -> {
-                    Log.e("TAG", " Activity Result")
-                }
-
-
-                Activity.RESULT_CANCELED -> {
-                    Log.e("TAG", " Activity Result not")
-                }
-            }
-            else -> {
-                Log.e("TAG", " Activity Result")
-            }
-        }
-
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.main_menu, menu)
+        searchView.setMenuItem(menu.findItem(R.id.action_search))
     }
 
 }

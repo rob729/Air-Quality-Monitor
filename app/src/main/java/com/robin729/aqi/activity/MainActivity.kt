@@ -1,40 +1,29 @@
 package com.robin729.aqi.activity
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.robin729.aqi.R
+import com.robin729.aqi.utils.Constants
+import com.robin729.aqi.utils.PermissionUtils
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val REQUEST_LOCATION_PERMISSION = 1
-    private val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        supportActionBar?.displayOptions = ActionBar.DISPLAY_SHOW_CUSTOM
-        supportActionBar?.elevation = 0f
-        supportActionBar?.setCustomView(R.layout.custom_toolbar)
+    }
 
+    override fun onStart() {
+        super.onStart()
         locationCheck()
     }
 
     private fun locationCheck() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
-            )
+        if (!PermissionUtils.isAccessFineLocationGranted(this)) {
+            PermissionUtils.requestAccessFindLocationPermission(this, Constants.REQUEST_LOCATION_PERMISSION)
         }
     }
 
@@ -47,21 +36,19 @@ class MainActivity : AppCompatActivity() {
         // location data layer.
 
         when (requestCode) {
-            REQUEST_LOCATION_PERMISSION -> {
+            Constants.REQUEST_LOCATION_PERMISSION -> {
                 if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    if (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        )
-                        == PackageManager.PERMISSION_GRANTED
-                    ) {
+
+                    if (PermissionUtils.isAccessFineLocationGranted(this)) {
                         Log.e("TAG", "granted permission")
+                    } else {
+                        PermissionUtils.requestAccessFindLocationPermission(
+                            this,
+                            Constants.REQUEST_LOCATION_PERMISSION
+                        )
                     }
                 } else {
-                    ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        REQUEST_LOCATION_PERMISSION
-                    )
+                    PermissionUtils.showPermissionLocationNotEnableDialog(this, Constants.REQUEST_LOCATION_PERMISSION)
                 }
             }
         }
