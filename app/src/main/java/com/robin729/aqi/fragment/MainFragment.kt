@@ -188,7 +188,6 @@ class MainFragment : Fragment() {
                 locationCallback,
                 Looper.getMainLooper()
             )
-
         } else {
             PermissionUtils.showGPSNotEnableDialog(context!!)
         }
@@ -253,6 +252,11 @@ class MainFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.main_menu, menu)
         searchView.setMenuItem(menu.findItem(R.id.action_search))
+    }
+
+    override fun onDestroy() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        super.onDestroy()
     }
 
 }

@@ -4,9 +4,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.Navigation
+import androidx.navigation.ui.setupWithNavController
 import com.robin729.aqi.R
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.PermissionUtils
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -14,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setupViews()
     }
 
     override fun onStart() {
@@ -21,9 +25,17 @@ class MainActivity : AppCompatActivity() {
         locationCheck()
     }
 
+    private fun setupViews() {
+        val navController = Navigation.findNavController(this, R.id.myNavHostFragment)
+        bottomNavView.setupWithNavController(navController)
+    }
+
     private fun locationCheck() {
         if (!PermissionUtils.isAccessFineLocationGranted(this)) {
-            PermissionUtils.requestAccessFindLocationPermission(this, Constants.REQUEST_LOCATION_PERMISSION)
+            PermissionUtils.requestAccessFindLocationPermission(
+                this,
+                Constants.REQUEST_LOCATION_PERMISSION
+            )
         }
     }
 
@@ -48,7 +60,10 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 } else {
-                    PermissionUtils.showPermissionLocationNotEnableDialog(this, Constants.REQUEST_LOCATION_PERMISSION)
+                    PermissionUtils.showPermissionLocationNotEnableDialog(
+                        this,
+                        Constants.REQUEST_LOCATION_PERMISSION
+                    )
                 }
             }
         }

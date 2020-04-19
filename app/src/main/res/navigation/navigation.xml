@@ -8,6 +8,16 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.robin729.aqi.fragment.MainFragment"
-        android:label="fragment_main"
+        android:label=" "
         tools:layout="@layout/fragment_main" />
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.robin729.aqi.fragment.MapsFragment"
+        android:label=" "
+        tools:layout="@layout/fragment_maps" />
+    <fragment
+        android:id="@+id/favouritesFragment"
+        android:name="com.robin729.aqi.fragment.FavouritesFragment"
+        android:label=" "
+        tools:layout="@layout/fragment_favourites" />
 </navigation>

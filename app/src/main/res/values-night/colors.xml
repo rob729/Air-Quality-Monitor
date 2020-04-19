@@ -13,4 +13,6 @@
     <color name="bgColor">#202125</color>
     <color name="secondary_text">#CCC8C8</color>
 
+    <color name="bottomNavColor">#292929</color>
+
 </resources>
