@@ -1,9 +1,13 @@
 package com.robin729.aqi.activity
 
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
 import com.robin729.aqi.R
@@ -17,6 +21,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        AppCompatDelegate.setDefaultNightMode(
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        )
+
         setupViews()
     }
 

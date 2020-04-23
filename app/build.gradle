@@ -5,6 +5,9 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'androidx.navigation.safeargs'
 
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -28,6 +31,9 @@ android {
 
 
     buildTypes {
+        debug {
+            resValue("string", "mapbox_key", localProperties['mapboxKey'])
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -71,5 +77,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     implementation 'com.github.Ferfalk:SimpleSearchView:0.1.5'
+
+    //for mapbox
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.1.0'
+
 
 }

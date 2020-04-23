@@ -1,6 +1,8 @@
 package com.robin729.aqi.utils
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
@@ -10,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.robin729.aqi.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -86,12 +89,26 @@ object Util {
         return R.drawable.art_storm
     }
 
-    fun formatDate(milliseconds: Long) : String {
+    fun formatDate(milliseconds: Long): String {
         val sdf = SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH)
         sdf.timeZone = TimeZone.getTimeZone("UTC")
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = milliseconds*1000L
+        calendar.timeInMillis = milliseconds * 1000L
         sdf.timeZone = TimeZone.getDefault()
         return sdf.format(calendar.time)
     }
+
+     fun getIconForAirQualityIndex(context: Context, aqi: Int): Bitmap? {
+        val iconDrawable: Int = when (aqi) {
+            in 0..50 -> { R.drawable.good_map_marker }
+            in 51..100 -> { R.drawable.satisfactory_map_marker }
+            in 101..200 -> { R.drawable.moderate_map_marker }
+            in 201..300 -> { R.drawable.poor_map_marker }
+            in 301..400 -> { R.drawable.very_poor_map_marker }
+            in 401..500 -> { R.drawable.severe_map_marker }
+            else -> { R.drawable.moderate_map_marker }
+        }
+        return BitmapFactory.decodeResource(context.resources, iconDrawable)
+    }
+
 }

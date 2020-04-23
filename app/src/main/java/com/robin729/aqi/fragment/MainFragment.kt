@@ -21,7 +21,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.robin729.aqi.AqiViewModel
+import com.robin729.aqi.viewmodel.AqiViewModel
 import com.robin729.aqi.R
 import com.robin729.aqi.utils.PermissionUtils
 import com.robin729.aqi.utils.Util
@@ -179,8 +179,8 @@ class MainFragment : Fragment() {
         if (PermissionUtils.isLocationEnabled(context!!)) {
             locationRequest.run {
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                fastestInterval = 300000
-                interval = 600000
+                fastestInterval = 60000
+                interval = 60000
                 smallestDisplacement = 800f
             }
             fusedLocationProviderClient.requestLocationUpdates(
@@ -215,7 +215,6 @@ class MainFragment : Fragment() {
     private fun handleNetworkChanges() {
         Util.getNetworkLiveData(context!!).observe(viewLifecycleOwner, Observer { isConnected ->
             if (!isConnected) {
-
                 loading.visibility = View.GONE
                 textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
                 networkStatusLayout.apply {
@@ -228,8 +227,10 @@ class MainFragment : Fragment() {
                         .setListener(null)
                 }
             } else {
-
                 loading.visibility = View.VISIBLE
+                if(parent_layout.visibility == View.INVISIBLE){
+                    onStart()
+                }
                 textViewNetworkStatus.text = getString(R.string.text_connectivity)
                 networkStatusLayout.apply {
                     setBackgroundColor(getColorRes(R.color.colorStatusConnected))
@@ -244,6 +245,7 @@ class MainFragment : Fragment() {
                             }
                         })
                 }
+
             }
         })
     }

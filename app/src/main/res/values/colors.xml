@@ -11,7 +11,7 @@
     <color name="colorStatusConnected">#43A047</color>
     <color name="colorStatusNotConnected">#D32F2F</color>
 
-    <color name="bottomNavColor">#E0E2F0</color>
+    <color name="bottomNavColor">#F1F3F2</color>
 
     <color name="bg">#BDBBBB</color>
 </resources>

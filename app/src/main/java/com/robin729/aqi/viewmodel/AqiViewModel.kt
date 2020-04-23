@@ -1,4 +1,4 @@
-package com.robin729.aqi
+package com.robin729.aqi.viewmodel
 
 import android.location.Geocoder
 import android.util.Log
