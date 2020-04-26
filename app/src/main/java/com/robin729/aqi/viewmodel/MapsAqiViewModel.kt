@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.model.mapsAqi.MapsAqiData
 import com.robin729.aqi.network.MapsAqiApi
@@ -36,7 +37,7 @@ class MapsAqiViewModel: ViewModel() {
     fun fetchData(latLngNE: LatLng, latLngSW: LatLng){
         _loading.value = true
 
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             val request = MapsAqiApi().initalizeRetrofit()
                 .getData("?token=${Constants.MAPS_AQI_KEY}&latlng=${latLngNE.latitude},${latLngNE.longitude},${latLngSW.latitude},${latLngSW.longitude}")
 

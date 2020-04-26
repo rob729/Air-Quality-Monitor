@@ -10,7 +10,6 @@ import com.robin729.aqi.model.weather.WeatherData
 import com.robin729.aqi.network.AqiApi
 import com.robin729.aqi.network.WeathersApi
 import com.robin729.aqi.utils.Constants
-import com.robin729.aqi.utils.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,9 +54,7 @@ class AqiViewModel : ViewModel() {
                 .getApi("current-conditions?lat=$lat&lon=$long&key=${Constants.API_KEY}&features=${Constants.FEATURES}")
 
             withContext(Dispatchers.IO) {
-
                 try {
-
                     request.enqueue(object : Callback<Info> {
                         override fun onResponse(call: Call<Info>, response: Response<Info>) {
                             _aqiLoadError.value = false
@@ -81,10 +78,7 @@ class AqiViewModel : ViewModel() {
                         }
                     })
                 } catch (e: Exception) {
-                    Log.e(
-                        "MainActicity",
-                        "Exception ${e.message}"
-                    )
+                    Log.e("MainActicity", "Exception ${e.message}")
                 }
             }
         }
@@ -96,11 +90,9 @@ class AqiViewModel : ViewModel() {
         CoroutineScope(Dispatchers.IO).launch {
             val request = WeathersApi().initalizeRetrofit()
                 .getApi("weather?lat=$lat&lon=$long&appid=${Constants.WEATHER_KEY}&units=metric")
-
             withContext(Dispatchers.IO) {
                 try {
                     request.enqueue(object : Callback<WeatherData> {
-
                         override fun onResponse(
                             call: Call<WeatherData>,
                             response: Response<WeatherData>
@@ -113,14 +105,9 @@ class AqiViewModel : ViewModel() {
                             _loading.value = false
                             Log.e("TAG", t.message)
                         }
-
                     })
-
                 } catch (e: Exception) {
-                    Log.e(
-                        "MainActicity",
-                        "Exception ${e.message}"
-                    )
+                    Log.e("MainActicity", "Exception ${e.message}")
                 }
             }
         }

@@ -2,8 +2,9 @@ package com.robin729.aqi.fragment
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.graphics.Color
-import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -12,21 +13,26 @@ import android.text.Html
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.ferfalk.simplesearchview.SimpleSearchView
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.robin729.aqi.viewmodel.AqiViewModel
+import com.google.android.gms.maps.model.LatLng
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
+import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
 import com.robin729.aqi.R
+import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
 import com.robin729.aqi.utils.PermissionUtils
 import com.robin729.aqi.utils.Util
 import com.robin729.aqi.utils.Util.getColorRes
+import com.robin729.aqi.viewmodel.AqiViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
+import timber.log.Timber
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -45,6 +51,9 @@ class MainFragment : Fragment() {
         FusedLocationProviderClient(context!!)
     }
 
+    var lat: Double = 0.00
+    var long: Double = 0.00
+
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult?) {
             super.onLocationResult(p0)
@@ -52,19 +61,13 @@ class MainFragment : Fragment() {
                 val newLat = p0?.locations?.get(0)?.latitude!!
                 val newLong = p0.locations[0]?.longitude!!
                 if (lat != newLat && long != newLong) {
-                    Log.e("TAG", "$lat and $newLat")
-                    Log.e("TAG", "$long and $newLong")
                     lat = newLat
                     long = newLong
-                    aqiViewModel.fetchRepos(lat, long, geocoder)
-                    aqiViewModel.fetchWeather(lat, long)
+                    fetchData(LatLng(lat, long))
                 }
             }
         }
     }
-
-    var lat: Double = 0.00
-    var long: Double = 0.00
 
     private val locationRequest: LocationRequest by lazy { LocationRequest() }
 
@@ -147,69 +150,30 @@ class MainFragment : Fragment() {
             Log.e("TAG", it.data.index.details.color + "vv")
         })
 
-        searchView.setOnQueryTextListener(object : SimpleSearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (Util.hasNetwork(context) && Geocoder.isPresent()) {
-                    val gc = Geocoder(context)
-                    val addresses: List<Address> = gc.getFromLocationName(query, 4)
-                    for (a in addresses) {
-                        if (a.hasLatitude() && a.hasLongitude()) {
-                            aqiViewModel.fetchRepos(a.latitude, a.longitude, geocoder)
-                            aqiViewModel.fetchWeather(a.latitude, a.longitude)
-                            break
-                        }
-                    }
-                }
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextCleared(): Boolean {
-                return false
-            }
-
-        })
     }
 
     override fun onStart() {
         super.onStart()
         if (PermissionUtils.isLocationEnabled(context!!)) {
-            locationRequest.run {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                fastestInterval = 60000
-                interval = 60000
-                smallestDisplacement = 800f
-            }
-            fusedLocationProviderClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
+            getLocationUpdates()
         } else {
             PermissionUtils.showGPSNotEnableDialog(context!!)
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        view!!.isFocusableInTouchMode = true
-        view!!.requestFocus()
-        view!!.setOnKeyListener { v, keyCode, event ->
-            Log.e("TAG", "${searchView.isSearchOpen}  onBackpres")
+    private fun onSearchCalled() {
+        // Set the fields to specify which types of place data to return.
+        val placeOptions = PlaceOptions.builder()
+            .toolbarColor(ContextCompat.getColor(context!!, R.color.textColor))
+            .backgroundColor(ContextCompat.getColor(context!!, R.color.textColor))
+            .hint("Enter the location...")
+            .build()
 
-            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-                if (searchView.isSearchOpen) {
-                    searchView.closeSearch()
-                    true
-                } else {
-                    false
-                }
-                // handle back button
-            } else false
-        }
+        val intent = PlaceAutocomplete.IntentBuilder()
+            .accessToken(getString(R.string.mapbox_key))
+            .placeOptions(placeOptions)
+            .build(activity)
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
     }
 
     private fun handleNetworkChanges() {
@@ -228,8 +192,8 @@ class MainFragment : Fragment() {
                 }
             } else {
                 loading.visibility = View.VISIBLE
-                if(parent_layout.visibility == View.INVISIBLE){
-                    onStart()
+                if (parent_layout.visibility == View.INVISIBLE) {
+                    getLocationUpdates()
                 }
                 textViewNetworkStatus.text = getString(R.string.text_connectivity)
                 networkStatusLayout.apply {
@@ -250,15 +214,49 @@ class MainFragment : Fragment() {
         })
     }
 
+    private fun getLocationUpdates() {
+        locationRequest.run {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            fastestInterval = 60000
+            interval = 60000
+            smallestDisplacement = 800f
+        }
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
+    }
+
+    private fun fetchData(latLng: LatLng) {
+        aqiViewModel.fetchRepos(latLng.latitude, latLng.longitude, geocoder)
+        aqiViewModel.fetchWeather(latLng.latitude, latLng.longitude)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.main_menu, menu)
-        searchView.setMenuItem(menu.findItem(R.id.action_search))
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_search -> onSearchCalled()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            val feature = PlaceAutocomplete.getPlace(data)
+            fetchData(LatLng(feature.center()?.latitude()!!, feature.center()?.longitude()!!))
+        }
     }
 
     override fun onDestroy() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
+        Timber.e("destroyed")
     }
 
 }
