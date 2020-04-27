@@ -27,4 +27,5 @@
     <string name="home">Home</string>
     <string name="maps">Maps</string>
     <string name="favourites">Favourites</string>
+    <string name="search_hint">Search Location</string>
 </resources>

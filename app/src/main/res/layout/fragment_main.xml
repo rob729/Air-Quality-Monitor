@@ -43,18 +43,6 @@
                         android:textColor="@color/textColor"
                         android:textSize="22sp" />
                 </androidx.appcompat.widget.Toolbar>
-
-                <com.ferfalk.simplesearchview.SimpleSearchView
-                    android:id="@+id/searchView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/bgColor"
-                    app:searchBackground="@color/bgColor"
-                    app:hintColor="@color/secondary_text"
-                    app:backIconTint="@color/textColor"
-                    android:inputType="textCapSentences"
-                    app:iconsTint="@color/textColor"
-                    android:textColor="@color/textColor"/>
             </FrameLayout>
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -74,6 +62,32 @@
                 tools:text="@string/text_no_connectivity" />
         </LinearLayout>
 
+
+        <RelativeLayout
+            android:id="@+id/loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/anim"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/txt_load"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/loading" />
+
+            <TextView
+                android:id="@+id/txt_load"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/pacifico"
+                android:text="@string/loading"
+                android:textColor="@color/textColor"
+                android:textSize="40sp" />
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/parent_layout"
@@ -391,76 +405,5 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/loading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/anim"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/txt_load"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                app:lottie_rawRes="@raw/loading" />
-
-            <TextView
-                android:id="@+id/txt_load"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_marginTop="8dp"
-                android:fontFamily="@font/pacifico"
-                android:text="@string/loading"
-                android:textColor="@color/textColor"
-                android:textSize="40sp" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/loc_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone">
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/anim_loc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/gps_off"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                app:lottie_rawRes="@raw/location" />
-
-            <TextView
-                android:id="@+id/gps_off"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="@string/gps_turned_off"
-                android:textAlignment="center"
-                android:textSize="24sp" />
-
-            <TextView
-                android:id="@+id/loc_warn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/gps_off"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="32dp"
-                android:text="@string/location_warning"
-                android:textAlignment="center"
-                android:textSize="16sp" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_margin="16dp"
-                android:text="@string/turn_gps"
-                android:textColor="@color/bgColor" />
-        </RelativeLayout>
     </LinearLayout>
 </ScrollView>

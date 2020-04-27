@@ -48,7 +48,7 @@ class MainFragment : Fragment() {
     private val geocoder by lazy { Geocoder(context, Locale.getDefault()) }
 
     private val fusedLocationProviderClient: FusedLocationProviderClient by lazy {
-        FusedLocationProviderClient(context!!)
+        FusedLocationProviderClient(requireContext())
     }
 
     var lat: Double = 0.00
@@ -101,7 +101,7 @@ class MainFragment : Fragment() {
 
         aqiViewModel.loading.observe(viewLifecycleOwner, Observer {
             parent_layout.visibility = if (it) View.INVISIBLE else View.VISIBLE
-            loading.visibility = if (it) View.VISIBLE else View.INVISIBLE
+            loading.visibility = if (it) View.VISIBLE else View.GONE
         })
 
         aqiViewModel.location.observe(viewLifecycleOwner, Observer {
@@ -154,18 +154,18 @@ class MainFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (PermissionUtils.isLocationEnabled(context!!)) {
+        if (PermissionUtils.isLocationEnabled(requireContext())) {
             getLocationUpdates()
         } else {
-            PermissionUtils.showGPSNotEnableDialog(context!!)
+            PermissionUtils.showGPSNotEnableDialog(requireContext())
         }
     }
 
     private fun onSearchCalled() {
         // Set the fields to specify which types of place data to return.
         val placeOptions = PlaceOptions.builder()
-            .toolbarColor(ContextCompat.getColor(context!!, R.color.textColor))
-            .backgroundColor(ContextCompat.getColor(context!!, R.color.textColor))
+            .toolbarColor(ContextCompat.getColor(requireContext(), R.color.textColor))
+            .backgroundColor(ContextCompat.getColor(requireContext(), R.color.textColor))
             .hint("Enter the location...")
             .build()
 
@@ -177,7 +177,7 @@ class MainFragment : Fragment() {
     }
 
     private fun handleNetworkChanges() {
-        Util.getNetworkLiveData(context!!).observe(viewLifecycleOwner, Observer { isConnected ->
+        Util.getNetworkLiveData(requireContext()).observe(viewLifecycleOwner, Observer { isConnected ->
             if (!isConnected) {
                 loading.visibility = View.GONE
                 textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
