@@ -3,6 +3,7 @@ package com.robin729.aqi.utils
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Geocoder
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
@@ -12,7 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.google.android.gms.maps.model.LatLng
 import com.robin729.aqi.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -98,17 +99,41 @@ object Util {
         return sdf.format(calendar.time)
     }
 
-     fun getIconForAirQualityIndex(context: Context, aqi: Int): Bitmap? {
+    fun getIconForAirQualityIndex(context: Context, aqi: Int): Bitmap? {
         val iconDrawable: Int = when (aqi) {
-            in 0..50 -> { R.drawable.good_map_marker }
-            in 51..100 -> { R.drawable.satisfactory_map_marker }
-            in 101..200 -> { R.drawable.moderate_map_marker }
-            in 201..300 -> { R.drawable.poor_map_marker }
-            in 301..400 -> { R.drawable.very_poor_map_marker }
-            in 401..500 -> { R.drawable.severe_map_marker }
-            else -> { R.drawable.moderate_map_marker }
+            in 0..50 -> {
+                R.drawable.good_map_marker
+            }
+            in 51..100 -> {
+                R.drawable.satisfactory_map_marker
+            }
+            in 101..200 -> {
+                R.drawable.moderate_map_marker
+            }
+            in 201..300 -> {
+                R.drawable.poor_map_marker
+            }
+            in 301..400 -> {
+                R.drawable.very_poor_map_marker
+            }
+            in 401..500 -> {
+                R.drawable.severe_map_marker
+            }
+            else -> {
+                R.drawable.moderate_map_marker
+            }
         }
         return BitmapFactory.decodeResource(context.resources, iconDrawable)
+    }
+
+    fun getLocationString(latLng: LatLng, geocoder: Geocoder): String {
+        val location = geocoder.getFromLocation(
+            latLng.latitude,
+            latLng.longitude,
+            1
+        )[0]
+        return location.subLocality + ", " + location.subAdminArea
+
     }
 
 }

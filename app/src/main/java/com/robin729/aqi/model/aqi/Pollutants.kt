@@ -1,6 +1,7 @@
-package com.robin729.aqi.model
+package com.robin729.aqi.model.aqi
 
 import com.google.gson.annotations.SerializedName
+import com.robin729.aqi.model.aqi.PollutantDetails
 
 class Pollutants(
     @SerializedName("co") val co: PollutantDetails, @SerializedName("no2") val no2: PollutantDetails,

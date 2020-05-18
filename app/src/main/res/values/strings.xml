@@ -28,4 +28,5 @@
     <string name="maps">Maps</string>
     <string name="favourites">Favourites</string>
     <string name="search_hint">Search Location</string>
+    <string name="error">Error while fetching data\n Please Try after sometime</string>
 </resources>

@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.robin729.aqi.model.Resource
 import com.robin729.aqi.model.mapsAqi.MapsAqiData
 import com.robin729.aqi.network.MapsAqiApi
 import com.robin729.aqi.utils.Constants
@@ -19,9 +20,9 @@ import retrofit2.Response
 
 class MapsAqiViewModel: ViewModel() {
 
-    private val _mapsAqiData = MutableLiveData<MapsAqiData>()
+    private val _mapsAqiData = MutableLiveData<Resource<MapsAqiData>>()
 
-    val mapsAqiData: LiveData<MapsAqiData>
+    val mapsAqiData: LiveData<Resource<MapsAqiData>>
         get() = _mapsAqiData
 
     private val _aqiLoadError = MutableLiveData<Boolean>()
@@ -35,7 +36,7 @@ class MapsAqiViewModel: ViewModel() {
         get() = _loading
 
     fun fetchData(latLngNE: LatLng, latLngSW: LatLng){
-        _loading.value = true
+        _mapsAqiData.value = Resource.Loading()
 
         viewModelScope.launch {
             val request = MapsAqiApi().initalizeRetrofit()
@@ -45,21 +46,19 @@ class MapsAqiViewModel: ViewModel() {
                 try{
                     request.enqueue(object : Callback<MapsAqiData>{
                         override fun onFailure(call: Call<MapsAqiData>, t: Throwable) {
-                            _aqiLoadError.value = true
-                            _loading.value = false
-                            Log.e("TAG", "failed: ${t.message}")
+                            _mapsAqiData.value = Resource.Error("Something went wrong ${t.message}", null)
                         }
 
                         override fun onResponse(
                             call: Call<MapsAqiData>,
                             response: Response<MapsAqiData>
                         ) {
-                            Log.e("TAG", "response: ${response.isSuccessful}")
-                           _mapsAqiData.value = response.body()
-                            _aqiLoadError.value = false
-                            _loading.value = false
+                            if(response.isSuccessful){
+                                _mapsAqiData.value = Resource.Success(response.body()!!)
+                            } else {
+                                _mapsAqiData.value = Resource.Error("Something went wrong ${response.message()}", null)
+                            }
                         }
-
                     })
 
                 }catch (e: Exception) {

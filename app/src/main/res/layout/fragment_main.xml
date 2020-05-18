@@ -75,7 +75,7 @@
                 android:layout_above="@id/txt_load"
                 app:lottie_autoPlay="true"
                 app:lottie_loop="true"
-                app:lottie_rawRes="@raw/loading" />
+                app:lottie_rawRes="@raw/air_pollution_loading" />
 
             <TextView
                 android:id="@+id/txt_load"
@@ -404,6 +404,35 @@
             </androidx.cardview.widget.CardView>
 
         </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/error_anim"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/txt_error"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/error" />
+
+            <TextView
+                android:id="@+id/txt_error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:fontFamily="@font/pacifico"
+                android:text="@string/error"
+                android:textColor="@color/textColor"
+                android:textSize="24sp" />
+        </RelativeLayout>
+
 
     </LinearLayout>
 </ScrollView>

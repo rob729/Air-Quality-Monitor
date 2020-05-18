@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.text.Html
-import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -26,6 +25,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
 import com.robin729.aqi.R
+import com.robin729.aqi.model.Resource
+import com.robin729.aqi.model.aqi.Info
+import com.robin729.aqi.model.weather.WeatherData
 import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
 import com.robin729.aqi.utils.PermissionUtils
 import com.robin729.aqi.utils.Util
@@ -99,55 +101,43 @@ class MainFragment : Fragment() {
 
         handleNetworkChanges()
 
-        aqiViewModel.loading.observe(viewLifecycleOwner, Observer {
-            parent_layout.visibility = if (it) View.INVISIBLE else View.VISIBLE
-            loading.visibility = if (it) View.VISIBLE else View.GONE
-        })
-
         aqiViewModel.location.observe(viewLifecycleOwner, Observer {
             location.text = resources.getString(R.string.location, it)
         })
 
-        aqiViewModel.weather.observe(viewLifecycleOwner, Observer {
-            Log.e("TAG", "${it.time} time")
-            weather_icon.setImageResource(Util.getArtForWeatherCondition(it.weather[0].id))
-            temp.text = resources.getString(R.string.temp, it.main.temp.roundToInt().toString())
-            date.text = Util.formatDate(it.time)
-            weather_description.text = it.weather[0].desp
+        aqiViewModel.aqi.observe(viewLifecycleOwner, Observer {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    setAQIData(it.data!!)
+                    parent_layout.visibility = View.VISIBLE
+                    loading.visibility = View.GONE
+                    error.visibility = View.GONE
+                }
+
+                Resource.Status.LOADING -> {
+                    error.visibility = View.GONE
+                    parent_layout.visibility = View.GONE
+                    loading.visibility = View.VISIBLE
+                }
+
+                Resource.Status.ERROR -> {
+                    parent_layout.visibility = View.GONE
+                    loading.visibility = View.GONE
+                    error.visibility = View.VISIBLE
+                }
+            }
         })
 
-        aqiViewModel.aqi.observe(viewLifecycleOwner, Observer {
-            Log.e("TAG", "observe")
-            aqi.text = it.data.index.details.aqi.toString()
-            category.text = it.data.index.details.category
-            card_view.setCardBackgroundColor(Color.parseColor(it.data.index.details.color))
-            co.text = resources.getString(
-                R.string.conc,
-                it.data.pollutants.co.concentration.value.toString(),
-                it.data.pollutants.co.concentration.units
-            )
-            no2.text = resources.getString(
-                R.string.conc,
-                it.data.pollutants.no2.concentration.value.toString(),
-                it.data.pollutants.no2.concentration.units
-            )
-            pm10.text = resources.getString(
-                R.string.conc,
-                it.data.pollutants.pm10.concentration.value.toString(),
-                it.data.pollutants.pm10.concentration.units
-            )
-            pm25.text = resources.getString(
-                R.string.conc,
-                it.data.pollutants.pm25.concentration.value.toString(),
-                it.data.pollutants.pm25.concentration.units
-            )
-            so2.text = resources.getString(
-                R.string.conc,
-                it.data.pollutants.so2.concentration.value.toString(),
-                it.data.pollutants.so2.concentration.units
-            )
-            general_recom.text = it.data.recommendations.general
-            Log.e("TAG", it.data.index.details.color + "vv")
+        aqiViewModel.weather.observe(viewLifecycleOwner, Observer {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    setWeatherData(it.data!!)
+                }
+
+                else -> {
+
+                }
+            }
         })
 
     }
@@ -159,6 +149,46 @@ class MainFragment : Fragment() {
         } else {
             PermissionUtils.showGPSNotEnableDialog(requireContext())
         }
+    }
+
+    private fun setAQIData(info: Info) {
+        aqi.text = info.data.index.details.aqi.toString()
+        category.text = info.data.index.details.category
+        card_view.setCardBackgroundColor(Color.parseColor(info.data.index.details.color))
+        co.text = resources.getString(
+            R.string.conc,
+            info.data.pollutants.co.concentration.value.toString(),
+            info.data.pollutants.co.concentration.units
+        )
+        no2.text = resources.getString(
+            R.string.conc,
+            info.data.pollutants.no2.concentration.value.toString(),
+            info.data.pollutants.no2.concentration.units
+        )
+        pm10.text = resources.getString(
+            R.string.conc,
+            info.data.pollutants.pm10.concentration.value.toString(),
+            info.data.pollutants.pm10.concentration.units
+        )
+        pm25.text = resources.getString(
+            R.string.conc,
+            info.data.pollutants.pm25.concentration.value.toString(),
+            info.data.pollutants.pm25.concentration.units
+        )
+        so2.text = resources.getString(
+            R.string.conc,
+            info.data.pollutants.so2.concentration.value.toString(),
+            info.data.pollutants.so2.concentration.units
+        )
+        general_recom.text = info.data.recommendations.general
+    }
+
+    private fun setWeatherData(weatherData: WeatherData) {
+        weather_icon.setImageResource(Util.getArtForWeatherCondition(weatherData.weather[0].id))
+        temp.text =
+            resources.getString(R.string.temp, weatherData.main.temp.roundToInt().toString())
+        date.text = Util.formatDate(weatherData.time)
+        weather_description.text = weatherData.weather[0].desp
     }
 
     private fun onSearchCalled() {
@@ -177,41 +207,42 @@ class MainFragment : Fragment() {
     }
 
     private fun handleNetworkChanges() {
-        Util.getNetworkLiveData(requireContext()).observe(viewLifecycleOwner, Observer { isConnected ->
-            if (!isConnected) {
-                loading.visibility = View.GONE
-                textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
-                networkStatusLayout.apply {
-                    alpha = 0f
-                    visibility = View.VISIBLE
-                    setBackgroundColor(getColorRes(R.color.colorStatusNotConnected))
-                    animate()
-                        .alpha(1f)
-                        .setDuration(ANIMATION_DURATION)
-                        .setListener(null)
-                }
-            } else {
-                loading.visibility = View.VISIBLE
-                if (parent_layout.visibility == View.INVISIBLE) {
-                    getLocationUpdates()
-                }
-                textViewNetworkStatus.text = getString(R.string.text_connectivity)
-                networkStatusLayout.apply {
-                    setBackgroundColor(getColorRes(R.color.colorStatusConnected))
+        Util.getNetworkLiveData(requireContext())
+            .observe(viewLifecycleOwner, Observer { isConnected ->
+                if (!isConnected) {
+                    loading.visibility = View.GONE
+                    textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
+                    networkStatusLayout.apply {
+                        alpha = 0f
+                        visibility = View.VISIBLE
+                        setBackgroundColor(getColorRes(R.color.colorStatusNotConnected))
+                        animate()
+                            .alpha(1f)
+                            .setDuration(ANIMATION_DURATION)
+                            .setListener(null)
+                    }
+                } else {
+                    loading.visibility = View.VISIBLE
+                    if (parent_layout.visibility == View.INVISIBLE) {
+                        getLocationUpdates()
+                    }
+                    textViewNetworkStatus.text = getString(R.string.text_connectivity)
+                    networkStatusLayout.apply {
+                        setBackgroundColor(getColorRes(R.color.colorStatusConnected))
 
-                    animate()
-                        .alpha(0f)
-                        .setStartDelay(ANIMATION_DURATION)
-                        .setDuration(ANIMATION_DURATION)
-                        .setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationEnd(animation: Animator) {
-                                visibility = View.GONE
-                            }
-                        })
-                }
+                        animate()
+                            .alpha(0f)
+                            .setStartDelay(ANIMATION_DURATION)
+                            .setDuration(ANIMATION_DURATION)
+                            .setListener(object : AnimatorListenerAdapter() {
+                                override fun onAnimationEnd(animation: Animator) {
+                                    visibility = View.GONE
+                                }
+                            })
+                    }
 
-            }
-        })
+                }
+            })
     }
 
     private fun getLocationUpdates() {
