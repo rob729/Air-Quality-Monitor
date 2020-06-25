@@ -2,6 +2,7 @@ package com.robin729.aqi.fragment
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.graphics.Color
@@ -197,6 +198,7 @@ class MainFragment : Fragment() {
             .toolbarColor(ContextCompat.getColor(requireContext(), R.color.textColor))
             .backgroundColor(ContextCompat.getColor(requireContext(), R.color.textColor))
             .hint("Enter the location...")
+            .country(Locale.getDefault())
             .build()
 
         val intent = PlaceAutocomplete.IntentBuilder()
@@ -245,6 +247,7 @@ class MainFragment : Fragment() {
             })
     }
 
+    @SuppressLint("MissingPermission")
     private fun getLocationUpdates() {
         locationRequest.run {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY

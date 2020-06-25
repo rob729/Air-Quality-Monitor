@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "603120247295",
+    "firebase_url": "https://air-quality-monitor-ed3b1.firebaseio.com",
+    "project_id": "air-quality-monitor-ed3b1",
+    "storage_bucket": "air-quality-monitor-ed3b1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:603120247295:android:59f72cb7cd29380b31c7ca",
+        "android_client_info": {
+          "package_name": "com.robin729.aqi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "603120247295-rj7579l0h79k4h63jt5i2tqdl1irhghc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.robin729.aqi",
+            "certificate_hash": "b86c97d508c3221b7b9ead8269ae728183f41146"
+          }
+        },
+        {
+          "client_id": "603120247295-pd6vsofbcgui2rr99ocv7a88o86fsgg5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdrBBlG_LtnNKUmH6RxuRuiCYZ0ZeXTPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "603120247295-pd6vsofbcgui2rr99ocv7a88o86fsgg5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

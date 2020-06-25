@@ -6,6 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.get
+import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.robin729.aqi.model.Resource
 import com.robin729.aqi.model.aqi.Info
 import com.robin729.aqi.model.weather.WeatherData
@@ -40,44 +43,47 @@ class AqiViewModel : ViewModel() {
     val location: LiveData<String>
         get() = _location
 
-    fun fetchRepos(lat: Double?, long: Double?, geocoder: Geocoder) {
-       _aqi.value = Resource.Loading()
+    fun fetchRepos(lat: Double, long: Double, geocoder: Geocoder) {
+        _aqi.value = Resource.Loading()
 
         CoroutineScope(Dispatchers.IO).launch {
+            val apiKey = Firebase.remoteConfig[Constants.REMOTE_CONFIG_API_KEY].asString()
             val request = AqiApi().initalizeRetrofit()
-                .getApi("current-conditions?lat=$lat&lon=$long&key=${Constants.API_KEY}&features=${Constants.FEATURES}")
+                .getApi(lat, long, apiKey, Constants.FEATURES)
+            val location = Util.getLocationString(LatLng(lat, long), geocoder)
 
             withContext(Dispatchers.IO) {
-                try {
-                    request.enqueue(object : Callback<Info> {
-                        override fun onResponse(call: Call<Info>, response: Response<Info>) {
 
-                            if(response.isSuccessful){
-                                _aqi.value = Resource.Success(response.body()!!)
-                                _location.value = Util.getLocationString(LatLng(lat!!, long!!), geocoder)
-                                Timber.e("%sViewModel", response.message())
-                            } else {
-                                _aqi.value = Resource.Error("Something went wrong ${response.message()}", null)
-                            }
-                        }
+                request.enqueue(object : Callback<Info> {
+                    override fun onResponse(call: Call<Info>, response: Response<Info>) {
 
-                        override fun onFailure(call: Call<Info>, t: Throwable) {
-                            _aqi.value = Resource.Error("Something went wrong ${t.message}", null)
+                        if (response.isSuccessful) {
+                            _aqi.value = Resource.Success(response.body()!!)
+                            _location.value = location
+                            Timber.e("%sViewModel", response.message())
+                        } else {
+                            _aqi.value = Resource.Error(
+                                "Something went wrong ${response.message()}",
+                                null
+                            )
                         }
-                    })
-                } catch (e: Exception) {
-                    Log.e("MainActicity", "Exception ${e.message}")
-                }
+                    }
+
+                    override fun onFailure(call: Call<Info>, t: Throwable) {
+                        _aqi.value = Resource.Error("Something went wrong ${t.message}", null)
+                    }
+                })
+
             }
         }
 
     }
 
-    fun fetchWeather(lat: Double?, long: Double?) {
+    fun fetchWeather(lat: Double, long: Double) {
         _weather.value = Resource.Loading()
         CoroutineScope(Dispatchers.IO).launch {
             val request = WeathersApi().initalizeRetrofit()
-                .getApi("weather?lat=$lat&lon=$long&appid=${Constants.WEATHER_KEY}&units=metric")
+                .getApi(lat, long, Constants.WEATHER_KEY, "metric")
             withContext(Dispatchers.IO) {
                 try {
                     request.enqueue(object : Callback<WeatherData> {
@@ -85,13 +91,14 @@ class AqiViewModel : ViewModel() {
                             call: Call<WeatherData>,
                             response: Response<WeatherData>
                         ) {
-                            if(response.isSuccessful){
+                            if (response.isSuccessful) {
                                 _weather.value = Resource.Success(response.body()!!)
                             }
                         }
 
                         override fun onFailure(call: Call<WeatherData>, t: Throwable) {
-                            _weather.value = Resource.Error("Something went wrong ${t.message}", null)
+                            _weather.value =
+                                Resource.Error("Something went wrong ${t.message}", null)
                         }
                     })
                 } catch (e: Exception) {

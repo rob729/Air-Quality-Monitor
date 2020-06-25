@@ -17,8 +17,8 @@
             android:id="@+id/appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            android:background="@color/colorPrimary">
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
             <FrameLayout
                 android:id="@+id/toolbar_container"
@@ -29,7 +29,7 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?android:attr/actionBarSize"
-                    app:title=" " >
+                    app:title=" ">
 
                     <TextView
                         android:id="@+id/title"
@@ -66,7 +66,8 @@
         <RelativeLayout
             android:id="@+id/loading"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/anim"
@@ -135,27 +136,50 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/location"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/location_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/card_view"
-                android:layout_centerHorizontal="true"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
-                android:fontFamily="@font/roboto_slab"
-                android:textAlignment="center"
-                android:textColor="@color/textColor"
-                android:textSize="20sp" />
+                android:gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:padding="3dp">
+
+                <TextView
+                    android:id="@+id/location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto_slab"
+                    android:textColor="@color/textColor"
+                    android:textSize="18sp" />
+
+                <com.like.LikeButton
+                    android:id="@+id/star_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:anim_scale_factor="2"
+                    app:icon_size="9dp"
+                    android:layout_marginLeft="8dp"
+                    app:icon_type="heart" />
+
+<!--                <com.github.ivbaranov.mfb.MaterialFavoriteButton-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    app:mfb_color="white"-->
+<!--                    app:mfb_type="heart" />-->
+
+            </LinearLayout>
 
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/weather"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/location"
+                android:layout_below="@id/location_layout"
                 android:layout_margin="8dp"
                 android:elevation="8dp"
                 app:cardCornerRadius="8dp">
@@ -426,9 +450,9 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:layout_marginTop="8dp"
-                android:textAlignment="center"
                 android:fontFamily="@font/pacifico"
                 android:text="@string/error"
+                android:textAlignment="center"
                 android:textColor="@color/textColor"
                 android:textSize="24sp" />
         </RelativeLayout>
