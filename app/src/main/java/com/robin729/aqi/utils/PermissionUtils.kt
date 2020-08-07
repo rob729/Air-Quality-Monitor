@@ -1,6 +1,7 @@
 package com.robin729.aqi.utils
 
 import android.app.AlertDialog
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.robin729.aqi.R
+import com.robin729.aqi.activity.MainActivity
+import com.robin729.aqi.fragment.MainFragment
+import kotlin.system.exitProcess
 
 object PermissionUtils {
 
@@ -53,6 +57,9 @@ object PermissionUtils {
             .setCancelable(false)
             .setPositiveButton(context.getString(R.string.enable_now)) { _, _ ->
                 context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            }
+            .setNegativeButton("Close App"){_, _ ->
+                exitProcess(0)
             }
             .show()
     }

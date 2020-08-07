@@ -15,4 +15,11 @@
 
     <color name="bottomNavColor">#292929</color>
 
+    <color name="ic_dark_green">#00b050</color>
+    <color name="ic_green">#92d050</color>
+    <color name="ic_maroon">#bf3b47</color>
+    <color name="ic_orange">#FF8C4B</color>
+    <color name="ic_purple">#C836FF</color>
+    <color name="ic_red">#FF6A6A</color>
+    <color name="ic_yellow">#FFEF61</color>
 </resources>

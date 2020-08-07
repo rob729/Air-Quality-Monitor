@@ -18,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
+            app:elevation="0dp"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
             <FrameLayout
@@ -158,13 +159,14 @@
                     android:textSize="18sp" />
 
                 <com.like.LikeButton
-                    android:id="@+id/star_button"
+                    android:id="@+id/favButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:anim_scale_factor="2"
                     app:icon_size="9dp"
-                    android:layout_marginLeft="8dp"
-                    app:icon_type="heart" />
+                    android:layout_marginStart="8dp"
+                    app:icon_type="heart"
+                    app:is_enabled="true" />
 
 <!--                <com.github.ivbaranov.mfb.MaterialFavoriteButton-->
 <!--                    android:layout_width="wrap_content"-->
@@ -450,7 +452,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/pacifico"
+                android:fontFamily="@font/roboto"
                 android:text="@string/error"
                 android:textAlignment="center"
                 android:textColor="@color/textColor"

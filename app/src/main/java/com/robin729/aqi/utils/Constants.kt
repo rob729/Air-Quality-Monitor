@@ -8,5 +8,9 @@ object Constants {
     const val WEATHER_KEY = "16c9ee9ca759661618772f12fca1ac88"
     const val FEATURES =
         "local_aqi,health_recommendations,pollutants_concentrations"
+    const val FAVOURITES_FEATURES =
+        "local_aqi"
+    const val PREF_NAME = "aqi_pref"
+    const val FAVOURITES_LIST = "favourites_list"
     const val REMOTE_CONFIG_API_KEY = "api_key"
 }

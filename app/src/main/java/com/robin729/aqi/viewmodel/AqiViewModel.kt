@@ -1,14 +1,13 @@
 package com.robin729.aqi.viewmodel
 
-import android.location.Geocoder
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.get
 import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.model.Resource
 import com.robin729.aqi.model.aqi.Info
 import com.robin729.aqi.model.weather.WeatherData
@@ -43,14 +42,15 @@ class AqiViewModel : ViewModel() {
     val location: LiveData<String>
         get() = _location
 
-    fun fetchRepos(lat: Double, long: Double, geocoder: Geocoder) {
+    fun fetchRepos(lat: Double, long: Double) {
         _aqi.value = Resource.Loading()
 
         CoroutineScope(Dispatchers.IO).launch {
             val apiKey = Firebase.remoteConfig[Constants.REMOTE_CONFIG_API_KEY].asString()
+            Log.e("TAG", apiKey)
             val request = AqiApi().initalizeRetrofit()
                 .getApi(lat, long, apiKey, Constants.FEATURES)
-            val location = Util.getLocationString(LatLng(lat, long), geocoder)
+            val location = Util.getLocationString(LatLng(lat, long))
 
             withContext(Dispatchers.IO) {
 
@@ -93,12 +93,15 @@ class AqiViewModel : ViewModel() {
                         ) {
                             if (response.isSuccessful) {
                                 _weather.value = Resource.Success(response.body()!!)
+                            } else {
+                                Log.e("Main", "onFailure: ${response.errorBody()}" )
                             }
                         }
 
                         override fun onFailure(call: Call<WeatherData>, t: Throwable) {
                             _weather.value =
                                 Resource.Error("Something went wrong ${t.message}", null)
+                            Log.e("Main", "onFailure: ${t.message}" )
                         }
                     })
                 } catch (e: Exception) {

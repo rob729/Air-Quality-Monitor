@@ -6,7 +6,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="enable_gps">Enable GPS</string>
-    <string name="required_for_this_app">Required for this app</string>
+    <string name="required_for_this_app">Please enable location to get accurate information</string>
     <string name="enable_now">Enable Now</string>
     <string name="give_location_permission">Give Location Permission</string>
     <string name="allow_now">Allow Now</string>
@@ -29,4 +29,5 @@
     <string name="favourites">Favourites</string>
     <string name="search_hint">Search Location</string>
     <string name="error">Error while fetching data\n Please Try after sometime</string>
+    <string name="something_went_wrong">Something went wrong</string>
 </resources>

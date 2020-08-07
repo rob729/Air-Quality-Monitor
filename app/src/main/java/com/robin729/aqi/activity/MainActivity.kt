@@ -1,11 +1,8 @@
 package com.robin729.aqi.activity
 
 import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.Navigation
@@ -28,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     }
     private val configSettings: FirebaseRemoteConfigSettings by lazy {
         remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 86400
+            minimumFetchIntervalInSeconds = 8640
         }
     }
 
@@ -62,8 +59,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateAPIKey(){
-        remoteConfig.setConfigSettingsAsync(configSettings)
+    private fun updateAPIKey() {
+        remoteConfig.setConfigSettingsAsync(configSettings).addOnCompleteListener {
+            remoteConfig.fetchAndActivate()
+        }
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
     }
 

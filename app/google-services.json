@@ -1,42 +1,101 @@
 {
   "project_info": {
-    "project_number": "603120247295",
-    "firebase_url": "https://air-quality-monitor-ed3b1.firebaseio.com",
-    "project_id": "air-quality-monitor-ed3b1",
-    "storage_bucket": "air-quality-monitor-ed3b1.appspot.com"
+    "project_number": "441387591060",
+    "firebase_url": "https://fir-c6ceb.firebaseio.com",
+    "project_id": "fir-c6ceb",
+    "storage_bucket": "fir-c6ceb.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:603120247295:android:59f72cb7cd29380b31c7ca",
+        "mobilesdk_app_id": "1:441387591060:android:4b7ec0d493ab8bad",
         "android_client_info": {
-          "package_name": "com.robin729.aqi"
+          "package_name": "com.example.android"
         }
       },
       "oauth_client": [
         {
-          "client_id": "603120247295-rj7579l0h79k4h63jt5i2tqdl1irhghc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.robin729.aqi",
-            "certificate_hash": "b86c97d508c3221b7b9ead8269ae728183f41146"
-          }
-        },
-        {
-          "client_id": "603120247295-pd6vsofbcgui2rr99ocv7a88o86fsgg5.apps.googleusercontent.com",
+          "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDdrBBlG_LtnNKUmH6RxuRuiCYZ0ZeXTPk"
+          "current_key": "AIzaSyCsmrm-zOdetnPI6kmHsOk9ullpTe_8r4k"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "603120247295-pd6vsofbcgui2rr99ocv7a88o86fsgg5.apps.googleusercontent.com",
+              "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441387591060:android:550084d3dbccadf5",
+        "android_client_info": {
+          "package_name": "com.example.robin.ads"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "441387591060-5hvk0ei0mglu117qu6on8l6vvkg3i6ih.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.robin.ads",
+            "certificate_hash": "c1dfcd765d0a0ea520758637d5563c60ff7db1a9"
+          }
+        },
+        {
+          "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsmrm-zOdetnPI6kmHsOk9ullpTe_8r4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-4907402977836551~2438310322"
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441387591060:android:d779f997b7871d911adb81",
+        "android_client_info": {
+          "package_name": "com.robin729.aqi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsmrm-zOdetnPI6kmHsOk9ullpTe_8r4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "441387591060-k0jg3ea6ef5hsp894uku7d7jjv5il08v.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.graphics.Color
-import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
@@ -22,20 +21,25 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.maps.model.LatLng
+import com.like.LikeButton
+import com.like.OnLikeListener
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
 import com.robin729.aqi.R
 import com.robin729.aqi.model.Resource
 import com.robin729.aqi.model.aqi.Info
 import com.robin729.aqi.model.weather.WeatherData
+import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
 import com.robin729.aqi.utils.PermissionUtils
+import com.robin729.aqi.utils.StoreSession
 import com.robin729.aqi.utils.Util
 import com.robin729.aqi.utils.Util.getColorRes
 import com.robin729.aqi.viewmodel.AqiViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 import timber.log.Timber
+import java.math.RoundingMode
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -48,10 +52,12 @@ class MainFragment : Fragment() {
         ViewModelProvider(this).get(AqiViewModel::class.java)
     }
 
-    private val geocoder by lazy { Geocoder(context, Locale.getDefault()) }
-
     private val fusedLocationProviderClient: FusedLocationProviderClient by lazy {
         FusedLocationProviderClient(requireContext())
+    }
+
+    private val favouritesLatLngList: HashSet<LatLng> by lazy {
+        StoreSession.readFavouritesLatLng(Constants.FAVOURITES_LIST)
     }
 
     var lat: Double = 0.00
@@ -61,8 +67,12 @@ class MainFragment : Fragment() {
         override fun onLocationResult(p0: LocationResult?) {
             super.onLocationResult(p0)
             if (Util.hasNetwork(context)) {
-                val newLat = p0?.locations?.get(0)?.latitude!!
-                val newLong = p0.locations[0]?.longitude!!
+                val newLat =
+                    (p0?.locations?.get(0)?.latitude!!).toBigDecimal().setScale(2, RoundingMode.UP)
+                        .toDouble()
+                val newLong =
+                    (p0.locations[0]?.longitude!!).toBigDecimal().setScale(2, RoundingMode.UP)
+                        .toDouble()
                 if (lat != newLat && long != newLong) {
                     lat = newLat
                     long = newLong
@@ -113,6 +123,7 @@ class MainFragment : Fragment() {
                     parent_layout.visibility = View.VISIBLE
                     loading.visibility = View.GONE
                     error.visibility = View.GONE
+                    favButton.isLiked = favouritesLatLngList.contains(LatLng(lat, long))
                 }
 
                 Resource.Status.LOADING -> {
@@ -141,6 +152,17 @@ class MainFragment : Fragment() {
             }
         })
 
+        favButton.setOnLikeListener(object : OnLikeListener {
+            override fun liked(likeButton: LikeButton?) {
+                favouritesLatLngList.add(LatLng(lat, long))
+            }
+
+            override fun unLiked(likeButton: LikeButton?) {
+                favouritesLatLngList.remove(LatLng(lat, long))
+            }
+
+        })
+
     }
 
     override fun onStart() {
@@ -150,6 +172,11 @@ class MainFragment : Fragment() {
         } else {
             PermissionUtils.showGPSNotEnableDialog(requireContext())
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        StoreSession.write(Constants.FAVOURITES_LIST, favouritesLatLngList)
     }
 
     private fun setAQIData(info: Info) {
@@ -263,7 +290,7 @@ class MainFragment : Fragment() {
     }
 
     private fun fetchData(latLng: LatLng) {
-        aqiViewModel.fetchRepos(latLng.latitude, latLng.longitude, geocoder)
+        aqiViewModel.fetchRepos(latLng.latitude, latLng.longitude)
         aqiViewModel.fetchWeather(latLng.latitude, latLng.longitude)
     }
 
@@ -283,7 +310,9 @@ class MainFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             val feature = PlaceAutocomplete.getPlace(data)
-            fetchData(LatLng(feature.center()?.latitude()!!, feature.center()?.longitude()!!))
+            lat = feature.center()?.latitude()!!
+            long = feature.center()?.longitude()!!
+            fetchData(LatLng(lat, long))
         }
     }
 

@@ -13,12 +13,21 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.android.gms.maps.model.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.R
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.min
 
 object Util {
+
+    lateinit var geocoder: Geocoder
+
+    fun initGeocoder(context: Context){
+        if(!this::geocoder.isInitialized){
+            geocoder = Geocoder(context, Locale.getDefault())
+        }
+    }
 
     fun hasNetwork(ctx: Context?): Boolean {
         val connectivityManager =
@@ -126,14 +135,89 @@ object Util {
         return BitmapFactory.decodeResource(context.resources, iconDrawable)
     }
 
-    fun getLocationString(latLng: LatLng, geocoder: Geocoder): String {
+    fun getFaceBasedOnAqi(aqi: Int): Int {
+        return when (aqi) {
+            in 0..50 -> {
+                R.drawable.ic_face_green
+            }
+            in 51..100 -> {
+                R.drawable.ic_face_green
+            }
+            in 101..200 -> {
+                R.drawable.ic_face_yellow
+            }
+            in 201..300 -> {
+                R.drawable.ic_face_orange
+            }
+            in 301..400 -> {
+                R.drawable.ic_face_maroon
+            }
+            in 401..500 -> {
+                R.drawable.ic_face_purple
+            }
+            else -> { R.drawable.ic_face_purple }
+        }
+    }
+
+    fun getAQICategory(aqi: Int): String{
+        return when (aqi) {
+            in 0..50 -> {
+                "Good"
+            }
+            in 51..100 -> {
+                "Satisfactory"
+            }
+            in 101..200 -> {
+                "Moderate"
+            }
+            in 201..300 -> {
+                "Poor"
+            }
+            in 301..400 -> {
+                "Very poor"
+            }
+            in 401..500 -> {
+                "Severe"
+            }
+            else -> { " " }
+        }
+    }
+
+    fun getBackgroundColourBasedOnAqi(aqi: Int): Int{
+        return when (aqi) {
+            in 0..50 -> {
+                R.color.ic_dark_green
+            }
+            in 51..100 -> {
+                R.color.ic_green
+            }
+            in 101..200 -> {
+                R.color.ic_yellow
+            }
+            in 201..300 -> {
+                R.color.ic_orange
+            }
+            in 301..400 -> {
+                R.color.ic_maroon
+            }
+            in 401..500 -> {
+                R.color.ic_purple
+            }
+            else -> { R.color.ic_purple }
+        }
+    }
+
+    fun getLocationString(latLng: LatLng): String {
         val location = geocoder.getFromLocation(
             latLng.latitude,
             latLng.longitude,
             1
         )[0]
-        return location.subLocality + ", " + location.subAdminArea
-
+        return if((location.subLocality.isNullOrBlank())){
+            location.subAdminArea + ", " + location.adminArea
+        } else {
+            location.subLocality.substring(0, min(location.subLocality.length, 20)) + ", " + location.subAdminArea
+        }
     }
 
 }
