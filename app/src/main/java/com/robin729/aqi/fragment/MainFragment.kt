@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.text.Html
+import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -26,6 +27,9 @@ import com.like.OnLikeListener
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
+import com.parse.ParseInstallation
+import com.parse.ParseObject
+import com.parse.ParseQuery
 import com.robin729.aqi.R
 import com.robin729.aqi.model.Resource
 import com.robin729.aqi.model.aqi.Info
@@ -42,6 +46,7 @@ import timber.log.Timber
 import java.math.RoundingMode
 import java.util.*
 import kotlin.math.roundToInt
+import kotlin.system.measureTimeMillis
 
 
 class MainFragment : Fragment() {
@@ -100,6 +105,8 @@ class MainFragment : Fragment() {
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
         (activity as AppCompatActivity).actionBar?.setDisplayShowTitleEnabled(false)
 
+        ParseInstallation.getCurrentInstallation().saveInBackground()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             txt_no2.text =
                 Html.fromHtml("NO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
@@ -109,6 +116,7 @@ class MainFragment : Fragment() {
             txt_no2.text = Html.fromHtml("NO<sub><small>2</small></sub>")
             txt_so2.text = Html.fromHtml("SO<sub><small>2</small></sub>")
         }
+
 
         handleNetworkChanges()
 
@@ -278,8 +286,8 @@ class MainFragment : Fragment() {
     private fun getLocationUpdates() {
         locationRequest.run {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            fastestInterval = 60000
-            interval = 60000
+            fastestInterval = 10000
+            interval = 10000
             smallestDisplacement = 800f
         }
         fusedLocationProviderClient.requestLocationUpdates(
@@ -287,6 +295,7 @@ class MainFragment : Fragment() {
             locationCallback,
             Looper.getMainLooper()
         )
+        Log.e("Main", "main activity")
     }
 
     private fun fetchData(latLng: LatLng) {

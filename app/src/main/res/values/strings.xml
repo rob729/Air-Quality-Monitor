@@ -30,4 +30,7 @@
     <string name="search_hint">Search Location</string>
     <string name="error">Error while fetching data\n Please Try after sometime</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="back4app_server_url">https://parseapi.back4app.com/</string>
+    <string name="back4app_app_id">ooq3xaOhxNRLsGwoFOZrIB80WgufecqbgMUlymHF</string>
+    <string name="back4app_client_key">J2HPugEdv7U1bStCEgM2FZPAIl5Mu5cK3lVwgRMp</string>
 </resources>

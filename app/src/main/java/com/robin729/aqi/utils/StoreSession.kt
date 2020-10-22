@@ -22,6 +22,12 @@ object StoreSession {
         editor.apply()
     }
 
+    fun write(key: String, value: Long) {
+        val editor = sharedPreferences.edit()
+        editor.putLong(key, value)
+        editor.apply()
+    }
+
     fun write(key: String, value: HashSet<LatLng>) {
         val editor = sharedPreferences.edit()
         val info = Gson().toJson(value)
@@ -34,6 +40,10 @@ object StoreSession {
         return sharedPreferences.getBoolean(key, false)
     }
 
+    fun getTime(key: String): Long {
+        return sharedPreferences.getLong(key, 0L)
+    }
+
     fun write(key: String, value: String) {
         val editor = sharedPreferences.edit()
         editor.putString(key, value)
@@ -41,7 +51,7 @@ object StoreSession {
     }
 
     fun readString(key: String): String {
-        return sharedPreferences.getString(key, " ").toString()
+        return sharedPreferences.getString(key, "").toString()
     }
 
     fun readFavouritesLatLng(key: String): HashSet<LatLng> {

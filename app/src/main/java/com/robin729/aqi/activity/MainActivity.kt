@@ -7,11 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
+
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
-import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.robin729.aqi.R
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.PermissionUtils
@@ -19,15 +16,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-
-    private val remoteConfig: FirebaseRemoteConfig by lazy {
-        Firebase.remoteConfig
-    }
-    private val configSettings: FirebaseRemoteConfigSettings by lazy {
-        remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 8640
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +25,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         setupViews()
-        updateAPIKey()
     }
 
     override fun onStart() {
@@ -57,13 +44,6 @@ class MainActivity : AppCompatActivity() {
                 Constants.REQUEST_LOCATION_PERMISSION
             )
         }
-    }
-
-    private fun updateAPIKey() {
-        remoteConfig.setConfigSettingsAsync(configSettings).addOnCompleteListener {
-            remoteConfig.fetchAndActivate()
-        }
-        remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
     }
 
     override fun onRequestPermissionsResult(
