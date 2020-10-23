@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.text.Html
-import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -28,12 +27,10 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.PlaceAutocomplete
 import com.mapbox.mapboxsdk.plugins.places.autocomplete.model.PlaceOptions
 import com.parse.ParseInstallation
-import com.parse.ParseObject
-import com.parse.ParseQuery
 import com.robin729.aqi.R
-import com.robin729.aqi.model.Resource
-import com.robin729.aqi.model.aqi.Info
-import com.robin729.aqi.model.weather.WeatherData
+import com.robin729.aqi.data.model.Resource
+import com.robin729.aqi.data.model.aqi.Info
+import com.robin729.aqi.data.model.weather.WeatherData
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
 import com.robin729.aqi.utils.PermissionUtils
@@ -46,7 +43,6 @@ import timber.log.Timber
 import java.math.RoundingMode
 import java.util.*
 import kotlin.math.roundToInt
-import kotlin.system.measureTimeMillis
 
 
 class MainFragment : Fragment() {
@@ -120,11 +116,11 @@ class MainFragment : Fragment() {
 
         handleNetworkChanges()
 
-        aqiViewModel.location.observe(viewLifecycleOwner, Observer {
+        aqiViewModel.location.observe(viewLifecycleOwner, {
             location.text = resources.getString(R.string.location, it)
         })
 
-        aqiViewModel.aqi.observe(viewLifecycleOwner, Observer {
+        aqiViewModel.aqi.observe(viewLifecycleOwner, {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     setAQIData(it.data!!)
@@ -148,7 +144,7 @@ class MainFragment : Fragment() {
             }
         })
 
-        aqiViewModel.weather.observe(viewLifecycleOwner, Observer {
+        aqiViewModel.weather.observe(viewLifecycleOwner, {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     setWeatherData(it.data!!)
@@ -295,11 +291,10 @@ class MainFragment : Fragment() {
             locationCallback,
             Looper.getMainLooper()
         )
-        Log.e("Main", "main activity")
     }
 
     private fun fetchData(latLng: LatLng) {
-        aqiViewModel.fetchRepos(latLng.latitude, latLng.longitude)
+        aqiViewModel.fetchAirQualityInfo(latLng.latitude, latLng.longitude)
         aqiViewModel.fetchWeather(latLng.latitude, latLng.longitude)
     }
 

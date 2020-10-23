@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robin729.aqi.R
 import com.robin729.aqi.adapter.FavouritesListAdapter
-import com.robin729.aqi.model.Resource
+import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.viewmodel.FavouritesViewModel
 import kotlinx.android.synthetic.main.fragment_favourites.*
 

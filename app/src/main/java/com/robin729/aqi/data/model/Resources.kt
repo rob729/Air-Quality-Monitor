@@ -1,4 +1,4 @@
-package com.robin729.aqi.model
+package com.robin729.aqi.data.model
 
 sealed class Resource<T>(
     val status: Status? = null,

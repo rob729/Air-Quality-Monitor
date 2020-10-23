@@ -1,18 +1,18 @@
 package com.robin729.aqi.activity
 
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
-
-import com.google.firebase.ktx.Firebase
 import com.robin729.aqi.R
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.PermissionUtils
 import kotlinx.android.synthetic.main.activity_main.*
+import timber.log.Timber
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,10 +20,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        AppCompatDelegate.setDefaultNightMode(
-            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        )
-
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && resources.configuration.uiMode.and(
+                Configuration.UI_MODE_NIGHT_MASK
+            ) == Configuration.UI_MODE_NIGHT_NO
+        ) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
         setupViews()
     }
 
@@ -59,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
 
                     if (PermissionUtils.isAccessFineLocationGranted(this)) {
-                        Log.e("TAG", "granted permission")
+                        Timber.e("granted permission")
                     } else {
                         PermissionUtils.requestAccessFindLocationPermission(
                             this,

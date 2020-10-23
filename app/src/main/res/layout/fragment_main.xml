@@ -132,8 +132,12 @@
                         android:text="@string/aqi"
                         android:textColor="@android:color/black"
                         android:textSize="32sp"
+                        android:maxLines="1"
+                        android:autoSizeMaxTextSize="32sp"
+                        android:autoSizeMinTextSize="24sp"
                         app:autoSizeTextType="uniform"
-                        app:fontFamily="@font/roboto_slab" />
+                        app:fontFamily="@font/roboto_slab"
+                        tools:targetApi="o" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

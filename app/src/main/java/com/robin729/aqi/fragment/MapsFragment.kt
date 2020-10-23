@@ -1,6 +1,7 @@
 package com.robin729.aqi.fragment
 
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +21,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.robin729.aqi.R
-import com.robin729.aqi.model.Resource
+import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.utils.PermissionUtils
 import com.robin729.aqi.utils.Util
 import com.robin729.aqi.viewmodel.MapsAqiViewModel
@@ -46,12 +47,6 @@ class MapsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         mapView.onCreate(savedInstanceState)
 
-
-        mapsAqiViewModel.fetchData(
-            LatLng(
-                35.513327, 97.39535869999999
-            ), LatLng(6.4626999, 68.1097)
-        )
         mapView.getMapAsync {
 
             mapsAqiViewModel.mapsAqiData.observe(viewLifecycleOwner, Observer { mapsAqiData ->
@@ -104,6 +99,7 @@ class MapsFragment : Fragment() {
 
     }
 
+    @SuppressLint("MissingPermission")
     private fun enableLocationComponent(mapboxMap: MapboxMap, style: Style) {
         if (PermissionUtils.isAccessFineLocationGranted(requireContext())) {
             val locationComponent: LocationComponent = mapboxMap.locationComponent

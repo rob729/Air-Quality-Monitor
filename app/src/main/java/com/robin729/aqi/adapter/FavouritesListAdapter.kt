@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.robin729.aqi.databinding.RowLayoutFavouritesBinding
-import com.robin729.aqi.model.favouritesAqi.Data
+import com.robin729.aqi.data.model.favouritesAqi.Data
 import com.robin729.aqi.utils.Util
 
 

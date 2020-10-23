@@ -1,8 +1,6 @@
 package com.robin729.aqi
 
 import android.app.Application
-import android.util.Log
-import com.google.firebase.FirebaseApp
 import com.parse.Parse
 import com.parse.ParseObject
 import com.parse.ParseQuery
@@ -16,7 +14,6 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        FirebaseApp.initializeApp(applicationContext)
         StoreSession.init(this)
         Util.initGeocoder(this)
         Parse.initialize(
@@ -46,7 +43,7 @@ class App : Application() {
                 if (e == null) {
                     StoreSession.write(Constants.API_KEY, p["key"].toString())
                 } else {
-                    Log.e("TAG", "error")
+                    Timber.e("error")
                 }
             }
         }
