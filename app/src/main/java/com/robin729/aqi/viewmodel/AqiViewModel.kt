@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
+import com.robin729.aqi.data.model.favouritesAqi.Result
 import com.robin729.aqi.data.model.weather.WeatherData
 import com.robin729.aqi.data.repository.AqiRepository
 import com.robin729.aqi.data.repository.AqiRepositoryImpl
@@ -21,6 +22,11 @@ class AqiViewModel : ViewModel() {
 
     val aqi: LiveData<Resource<Info>>
         get() = _aqi
+
+    private val _predictionData = MutableLiveData<Resource<Result>>()
+
+    val predictionData: LiveData<Resource<Result>>
+        get() = _predictionData
 
     private val _weather = MutableLiveData<Resource<WeatherData>>()
 
@@ -48,6 +54,12 @@ class AqiViewModel : ViewModel() {
         _weather.value = Resource.Loading()
         CoroutineScope(Dispatchers.IO).launch {
             _weather.postValue(aqiRepository.getWeather(lat, long))
+        }
+    }
+
+    fun fetchPrediction(lat: Double, long: Double){
+        CoroutineScope(Dispatchers.IO).launch {
+            _predictionData.postValue(aqiRepository.getAqiPrediction(lat,long))
         }
     }
 }

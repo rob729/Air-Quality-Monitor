@@ -33,4 +33,5 @@
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
     <string name="back4app_app_id">ooq3xaOhxNRLsGwoFOZrIB80WgufecqbgMUlymHF</string>
     <string name="back4app_client_key">J2HPugEdv7U1bStCEgM2FZPAIl5Mu5cK3lVwgRMp</string>
+    <string name="forecast">Forecast</string>
 </resources>

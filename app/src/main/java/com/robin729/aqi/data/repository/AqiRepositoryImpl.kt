@@ -4,6 +4,7 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
 import com.robin729.aqi.data.model.favouritesAqi.Response
+import com.robin729.aqi.data.model.favouritesAqi.Result
 import com.robin729.aqi.data.model.mapsAqi.MapsAqiData
 import com.robin729.aqi.data.model.weather.WeatherData
 import com.robin729.aqi.network.retrofit.AqiApi
@@ -49,6 +50,17 @@ class AqiRepositoryImpl : AqiRepository {
 
     override suspend fun getMapsAqiData(latLngNE: LatLng, latLngSW: LatLng): Resource<MapsAqiData> =
         getDataFromService(MapsAqiApi.retrofitService.getMapsData("?token=${Constants.MAPS_AQI_KEY}&latlng=${latLngNE.latitude},${latLngNE.longitude},${latLngSW.latitude},${latLngSW.longitude}"))
+
+    override suspend fun getAqiPrediction(lat: Double, long: Double): Resource<Result> =
+        getDataFromService(
+            AqiApi.retrofitService.getAqiForecastData(
+                lat,
+                long,
+                apiKey,
+                4,
+                Constants.FAVOURITES_FEATURES
+            )
+        )
 
 
     override suspend fun getFavouritesListData(): Resource<ArrayList<com.robin729.aqi.data.model.favouritesAqi.Data>> =

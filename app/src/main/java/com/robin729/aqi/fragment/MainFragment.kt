@@ -30,6 +30,7 @@ import com.parse.ParseInstallation
 import com.robin729.aqi.R
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
+import com.robin729.aqi.data.model.favouritesAqi.Result
 import com.robin729.aqi.data.model.weather.WeatherData
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
@@ -41,13 +42,12 @@ import com.robin729.aqi.viewmodel.AqiViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 import timber.log.Timber
 import java.math.RoundingMode
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
 
 class MainFragment : Fragment() {
-
-    private val ANIMATION_DURATION = 1000.toLong()
 
     private val aqiViewModel: AqiViewModel by lazy {
         ViewModelProvider(this).get(AqiViewModel::class.java)
@@ -61,13 +61,26 @@ class MainFragment : Fragment() {
         StoreSession.readFavouritesLatLng(Constants.FAVOURITES_LIST)
     }
 
+    private val input: SimpleDateFormat by lazy {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
+    }.apply {
+        this.value.timeZone = TimeZone.getTimeZone("UTC")
+    }
+    private val output: SimpleDateFormat by lazy {
+        SimpleDateFormat("HH:mm", Locale.ENGLISH)
+    }.apply {
+        this.value.timeZone = Calendar.getInstance().timeZone
+    }
+
+    private var placeSearched = false
+
     var lat: Double = 0.00
     var long: Double = 0.00
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult?) {
             super.onLocationResult(p0)
-            if (Util.hasNetwork(context)) {
+            if (Util.hasNetwork(context) && !placeSearched) {
                 val newLat =
                     (p0?.locations?.get(0)?.latitude!!).toBigDecimal().setScale(2, RoundingMode.UP)
                         .toDouble()
@@ -103,6 +116,7 @@ class MainFragment : Fragment() {
 
         ParseInstallation.getCurrentInstallation().saveInBackground()
 
+        @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             txt_no2.text =
                 Html.fromHtml("NO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
@@ -112,7 +126,6 @@ class MainFragment : Fragment() {
             txt_no2.text = Html.fromHtml("NO<sub><small>2</small></sub>")
             txt_so2.text = Html.fromHtml("SO<sub><small>2</small></sub>")
         }
-
 
         handleNetworkChanges()
 
@@ -144,14 +157,23 @@ class MainFragment : Fragment() {
             }
         })
 
+        aqiViewModel.predictionData.observe(viewLifecycleOwner, { predictionData ->
+            when (predictionData.status) {
+                Resource.Status.SUCCESS -> {
+                    setPredictionData(predictionData)
+                }
+                else -> {
+                }
+            }
+
+        })
+
         aqiViewModel.weather.observe(viewLifecycleOwner, {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     setWeatherData(it.data!!)
                 }
-
                 else -> {
-
                 }
             }
         })
@@ -223,6 +245,23 @@ class MainFragment : Fragment() {
         weather_description.text = weatherData.weather[0].desp
     }
 
+    private fun setPredictionData(predictionData: Resource<Result>) {
+        predictionData.data?.let {
+            predTxt1.text = it.data[0].index.details.aqi.toString()
+            predTxt2.text = it.data[1].index.details.aqi.toString()
+            predTxt3.text = it.data[2].index.details.aqi.toString()
+            predTxt4.text = it.data[3].index.details.aqi.toString()
+            predTxt1.setBackgroundColor(Color.parseColor(it.data[0].index.details.color))
+            predTxt2.setBackgroundColor(Color.parseColor(it.data[1].index.details.color))
+            predTxt3.setBackgroundColor(Color.parseColor(it.data[2].index.details.color))
+            predTxt4.setBackgroundColor(Color.parseColor(it.data[3].index.details.color))
+            predTimeTxt1.text = output.format(input.parse(it.data[0].time))
+            predTimeTxt2.text = output.format(input.parse(it.data[1].time))
+            predTimeTxt3.text = output.format(input.parse(it.data[2].time))
+            predTimeTxt4.text = output.format(input.parse(it.data[3].time))
+        }
+    }
+
     private fun onSearchCalled() {
         // Set the fields to specify which types of place data to return.
         val placeOptions = PlaceOptions.builder()
@@ -241,7 +280,7 @@ class MainFragment : Fragment() {
 
     private fun handleNetworkChanges() {
         Util.getNetworkLiveData(requireContext())
-            .observe(viewLifecycleOwner, Observer { isConnected ->
+            .observe(viewLifecycleOwner, { isConnected ->
                 if (!isConnected) {
                     loading.visibility = View.GONE
                     textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
@@ -251,12 +290,12 @@ class MainFragment : Fragment() {
                         setBackgroundColor(getColorRes(R.color.colorStatusNotConnected))
                         animate()
                             .alpha(1f)
-                            .setDuration(ANIMATION_DURATION)
+                            .setDuration(Constants.ANIMATION_DURATION)
                             .setListener(null)
                     }
                 } else {
-                    loading.visibility = View.VISIBLE
                     if (parent_layout.visibility == View.INVISIBLE) {
+                        loading.visibility = View.VISIBLE
                         getLocationUpdates()
                     }
                     textViewNetworkStatus.text = getString(R.string.text_connectivity)
@@ -265,8 +304,8 @@ class MainFragment : Fragment() {
 
                         animate()
                             .alpha(0f)
-                            .setStartDelay(ANIMATION_DURATION)
-                            .setDuration(ANIMATION_DURATION)
+                            .setStartDelay(Constants.ANIMATION_DURATION)
+                            .setDuration(Constants.ANIMATION_DURATION)
                             .setListener(object : AnimatorListenerAdapter() {
                                 override fun onAnimationEnd(animation: Animator) {
                                     visibility = View.GONE
@@ -296,6 +335,7 @@ class MainFragment : Fragment() {
     private fun fetchData(latLng: LatLng) {
         aqiViewModel.fetchAirQualityInfo(latLng.latitude, latLng.longitude)
         aqiViewModel.fetchWeather(latLng.latitude, latLng.longitude)
+        aqiViewModel.fetchPrediction(latLng.latitude, latLng.longitude)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -317,6 +357,7 @@ class MainFragment : Fragment() {
             lat = feature.center()?.latitude()!!
             long = feature.center()?.longitude()!!
             fetchData(LatLng(lat, long))
+            placeSearched = true
         }
     }
 

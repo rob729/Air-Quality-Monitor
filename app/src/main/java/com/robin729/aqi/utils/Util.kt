@@ -15,6 +15,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.R
+import com.robin729.aqi.data.model.Resource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
@@ -129,7 +132,7 @@ object Util {
                 R.drawable.severe_map_marker
             }
             else -> {
-                R.drawable.moderate_map_marker
+                R.drawable.severe_map_marker
             }
         }
         return BitmapFactory.decodeResource(context.resources, iconDrawable)
@@ -179,7 +182,7 @@ object Util {
             in 401..500 -> {
                 "Severe"
             }
-            else -> { " " }
+            else -> { "Severe" }
         }
     }
 
@@ -207,16 +210,20 @@ object Util {
         }
     }
 
-    fun getLocationString(latLng: LatLng): String {
-        val location = geocoder.getFromLocation(
-            latLng.latitude,
-            latLng.longitude,
-            1
-        )[0]
-        return if((location.subLocality.isNullOrBlank())){
-            location.subAdminArea + ", " + location.adminArea
-        } else {
-            location.subLocality.substring(0, min(location.subLocality.length, 20)) + ", " + location.subAdminArea
+    suspend fun getLocationString(latLng: LatLng): String = withContext(Dispatchers.IO){
+        return@withContext try {
+            val location = geocoder.getFromLocation(
+                latLng.latitude,
+                latLng.longitude,
+                1
+            )[0]
+            if((location.subLocality.isNullOrBlank())){
+                location.subAdminArea + ", " + location.adminArea
+            } else {
+                location.subLocality.substring(0, min(location.subLocality.length, 20)) + ", " + location.subAdminArea
+            }
+        } catch (exception: Exception) {
+           "  "
         }
     }
 

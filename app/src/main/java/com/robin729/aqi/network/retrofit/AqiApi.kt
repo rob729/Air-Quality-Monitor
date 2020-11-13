@@ -14,4 +14,5 @@ object AqiApi {
     val retrofitService: AqiService by lazy {
         retrofit.create(AqiService::class.java)
     }
+
 }

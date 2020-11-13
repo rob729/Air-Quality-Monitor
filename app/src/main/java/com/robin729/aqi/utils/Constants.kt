@@ -1,6 +1,7 @@
 package com.robin729.aqi.utils
 
 object Constants {
+    const val ANIMATION_DURATION = 1000L
     const val REQUEST_LOCATION_PERMISSION = 1
     const val AUTOCOMPLETE_REQUEST_CODE = 2
     const val API_KEY = "api_key"
