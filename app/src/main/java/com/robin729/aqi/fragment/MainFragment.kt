@@ -15,12 +15,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.*
 import com.like.LikeButton
 import com.like.OnLikeListener
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -32,40 +29,48 @@ import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
 import com.robin729.aqi.data.model.favouritesAqi.Result
 import com.robin729.aqi.data.model.weather.WeatherData
-import com.robin729.aqi.utils.Constants
+import com.robin729.aqi.databinding.FragmentMainBinding
+import com.robin729.aqi.utils.*
 import com.robin729.aqi.utils.Constants.AUTOCOMPLETE_REQUEST_CODE
-import com.robin729.aqi.utils.PermissionUtils
-import com.robin729.aqi.utils.StoreSession
-import com.robin729.aqi.utils.Util
 import com.robin729.aqi.utils.Util.getColorRes
 import com.robin729.aqi.viewmodel.AqiViewModel
-import kotlinx.android.synthetic.main.fragment_main.*
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.math.RoundingMode
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-
+@AndroidEntryPoint
 class MainFragment : Fragment() {
 
-    private val aqiViewModel: AqiViewModel by lazy {
-        ViewModelProvider(this).get(AqiViewModel::class.java)
-    }
+
+    @Inject
+    lateinit var preferenceRepository: PreferenceRepository
+
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
+
+    private val aqiViewModel: AqiViewModel by viewModels()
 
     private val fusedLocationProviderClient: FusedLocationProviderClient by lazy {
-        FusedLocationProviderClient(requireContext())
+        //FusedLocationProviderClient(requireContext())
+        LocationServices.getFusedLocationProviderClient(requireContext())
     }
 
-    private val favouritesLatLngList: HashSet<LatLng> by lazy {
-        StoreSession.readFavouritesLatLng(Constants.FAVOURITES_LIST)
-    }
+    private val favouritesLatLngList: HashSet<LatLng> = hashSetOf()
 
     private val input: SimpleDateFormat by lazy {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
     }.apply {
         this.value.timeZone = TimeZone.getTimeZone("UTC")
     }
+
     private val output: SimpleDateFormat by lazy {
         SimpleDateFormat("HH:mm", Locale.ENGLISH)
     }.apply {
@@ -74,8 +79,8 @@ class MainFragment : Fragment() {
 
     private var placeSearched = false
 
-    var lat: Double = 0.00
-    var long: Double = 0.00
+    private var lat: Double = 0.00
+    private var long: Double = 0.00
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult?) {
@@ -101,58 +106,68 @@ class MainFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-
+        _binding = FragmentMainBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_main, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         (activity as AppCompatActivity).actionBar?.setDisplayShowTitleEnabled(false)
 
         ParseInstallation.getCurrentInstallation().saveInBackground()
 
-        @Suppress("DEPRECATION")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            txt_no2.text =
-                Html.fromHtml("NO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
-            txt_so2.text =
-                Html.fromHtml("SO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
-        } else {
-            txt_no2.text = Html.fromHtml("NO<sub><small>2</small></sub>")
-            txt_so2.text = Html.fromHtml("SO<sub><small>2</small></sub>")
+        binding.apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                txtNo2.text =
+                    Html.fromHtml("NO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
+                txtSo2.text =
+                    Html.fromHtml("SO<sub><small>2</small></sub>", HtmlCompat.FROM_HTML_MODE_LEGACY)
+            } else {
+                txtNo2.text = Html.fromHtml("NO<sub><small>2</small></sub>")
+                txtSo2.text = Html.fromHtml("SO<sub><small>2</small></sub>")
+            }
+
         }
 
         handleNetworkChanges()
+        if (arguments?.containsKey(Constants.FAV_LAT_LNG) == true) {
+            val favLatLng = arguments?.get(Constants.FAV_LAT_LNG) as LatLng
+            fetchData(favLatLng)
+            placeSearched = true
+        }
 
         aqiViewModel.location.observe(viewLifecycleOwner, {
-            location.text = resources.getString(R.string.location, it)
+            binding.location.text = resources.getString(R.string.location, it)
         })
 
         aqiViewModel.aqi.observe(viewLifecycleOwner, {
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    setAQIData(it.data!!)
-                    parent_layout.visibility = View.VISIBLE
-                    loading.visibility = View.GONE
-                    error.visibility = View.GONE
-                    favButton.isLiked = favouritesLatLngList.contains(LatLng(lat, long))
-                }
+            binding.apply {
+                when (it.status) {
+                    Resource.Status.SUCCESS -> {
+                        setAQIData(it.data!!)
+                        parentLayout.visible()
+                        loading.gone()
+                        error.gone()
+                        favButton.isLiked = favouritesLatLngList.contains(LatLng(lat, long))
 
-                Resource.Status.LOADING -> {
-                    error.visibility = View.GONE
-                    parent_layout.visibility = View.GONE
-                    loading.visibility = View.VISIBLE
-                }
+                    }
 
-                Resource.Status.ERROR -> {
-                    parent_layout.visibility = View.GONE
-                    loading.visibility = View.GONE
-                    error.visibility = View.VISIBLE
+                    Resource.Status.LOADING -> {
+                        error.gone()
+                        parentLayout.gone()
+                        loading.visible()
+                    }
+
+                    Resource.Status.ERROR -> {
+                        parentLayout.gone()
+                        loading.gone()
+                        error.visible()
+                    }
                 }
             }
         })
@@ -178,7 +193,7 @@ class MainFragment : Fragment() {
             }
         })
 
-        favButton.setOnLikeListener(object : OnLikeListener {
+        binding.favButton.setOnLikeListener(object : OnLikeListener {
             override fun liked(likeButton: LikeButton?) {
                 favouritesLatLngList.add(LatLng(lat, long))
             }
@@ -200,73 +215,95 @@ class MainFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewLifecycleOwner.lifecycleScope.launch {
+            favouritesLatLngList.apply {
+                clear()
+                addAll(preferenceRepository.getFavLatLngList().first())
+            }
+        }
+    }
+
     override fun onPause() {
         super.onPause()
-        StoreSession.write(Constants.FAVOURITES_LIST, favouritesLatLngList)
+        viewLifecycleOwner.lifecycleScope.launch {
+            withContext(NonCancellable) {
+                preferenceRepository.setFavLatLngList(favouritesLatLngList)
+            }
+        }
     }
 
     private fun setAQIData(info: Info) {
-        aqi.text = info.data.index.details.aqi.toString()
-        category.text = info.data.index.details.category
-        card_view.setCardBackgroundColor(Color.parseColor(info.data.index.details.color))
-        co.text = resources.getString(
-            R.string.conc,
-            info.data.pollutants.co.concentration.value.toString(),
-            info.data.pollutants.co.concentration.units
-        )
-        no2.text = resources.getString(
-            R.string.conc,
-            info.data.pollutants.no2.concentration.value.toString(),
-            info.data.pollutants.no2.concentration.units
-        )
-        pm10.text = resources.getString(
-            R.string.conc,
-            info.data.pollutants.pm10.concentration.value.toString(),
-            info.data.pollutants.pm10.concentration.units
-        )
-        pm25.text = resources.getString(
-            R.string.conc,
-            info.data.pollutants.pm25.concentration.value.toString(),
-            info.data.pollutants.pm25.concentration.units
-        )
-        so2.text = resources.getString(
-            R.string.conc,
-            info.data.pollutants.so2.concentration.value.toString(),
-            info.data.pollutants.so2.concentration.units
-        )
-        general_recom.text = info.data.recommendations.general
+        binding.apply {
+            aqi.text = info.data.index.details.aqi.toString()
+            category.text = info.data.index.details.category
+            cardView.setCardBackgroundColor(Color.parseColor(info.data.index.details.color))
+            co.text = resources.getString(
+                R.string.conc,
+                info.data.pollutants.co.concentration.value.toString(),
+                info.data.pollutants.co.concentration.units
+            )
+            no2.text = resources.getString(
+                R.string.conc,
+                info.data.pollutants.no2.concentration.value.toString(),
+                info.data.pollutants.no2.concentration.units
+            )
+            pm10.text = resources.getString(
+                R.string.conc,
+                info.data.pollutants.pm10.concentration.value.toString(),
+                info.data.pollutants.pm10.concentration.units
+            )
+            pm25.text = resources.getString(
+                R.string.conc,
+                info.data.pollutants.pm25.concentration.value.toString(),
+                info.data.pollutants.pm25.concentration.units
+            )
+            so2.text = resources.getString(
+                R.string.conc,
+                info.data.pollutants.so2.concentration.value.toString(),
+                info.data.pollutants.so2.concentration.units
+            )
+            generalRecom.text = info.data.recommendations.general
+        }
+
     }
 
     private fun setWeatherData(weatherData: WeatherData) {
-        weather_icon.setImageResource(Util.getArtForWeatherCondition(weatherData.weather[0].id))
-        temp.text =
-            resources.getString(R.string.temp, weatherData.main.temp.roundToInt().toString())
-        date.text = Util.formatDate(weatherData.time)
-        weather_description.text = weatherData.weather[0].desp
+        binding.apply {
+            weatherIcon.setImageResource(Util.getArtForWeatherCondition(weatherData.weather[0].id))
+            temp.text =
+                resources.getString(R.string.temp, weatherData.main.temp.roundToInt().toString())
+            date.text = Util.formatDate(weatherData.time)
+            weatherDescription.text = weatherData.weather[0].desp
+        }
     }
 
     private fun setPredictionData(predictionData: Resource<Result>) {
         predictionData.data?.let {
-            predTxt1.text = it.data[0].index.details.aqi.toString()
-            predTxt2.text = it.data[1].index.details.aqi.toString()
-            predTxt3.text = it.data[2].index.details.aqi.toString()
-            predTxt4.text = it.data[3].index.details.aqi.toString()
-            predTxt1.setBackgroundColor(Color.parseColor(it.data[0].index.details.color))
-            predTxt2.setBackgroundColor(Color.parseColor(it.data[1].index.details.color))
-            predTxt3.setBackgroundColor(Color.parseColor(it.data[2].index.details.color))
-            predTxt4.setBackgroundColor(Color.parseColor(it.data[3].index.details.color))
-            predTimeTxt1.text = output.format(input.parse(it.data[0].time))
-            predTimeTxt2.text = output.format(input.parse(it.data[1].time))
-            predTimeTxt3.text = output.format(input.parse(it.data[2].time))
-            predTimeTxt4.text = output.format(input.parse(it.data[3].time))
+            binding.apply {
+                predTxt1.text = it.data[0].index.details.aqi.toString()
+                predTxt2.text = it.data[3].index.details.aqi.toString()
+                predTxt3.text = it.data[7].index.details.aqi.toString()
+                predTxt4.text = it.data[11].index.details.aqi.toString()
+                predTxt1.setBackgroundColor(Color.parseColor(it.data[0].index.details.color))
+                predTxt2.setBackgroundColor(Color.parseColor(it.data[3].index.details.color))
+                predTxt3.setBackgroundColor(Color.parseColor(it.data[7].index.details.color))
+                predTxt4.setBackgroundColor(Color.parseColor(it.data[11].index.details.color))
+                predTimeTxt1.text = output.format(input.parse(it.data[0].time))
+                predTimeTxt2.text = output.format(input.parse(it.data[3].time))
+                predTimeTxt3.text = output.format(input.parse(it.data[7].time))
+                predTimeTxt4.text = output.format(input.parse(it.data[11].time))
+            }
         }
     }
 
     private fun onSearchCalled() {
         // Set the fields to specify which types of place data to return.
         val placeOptions = PlaceOptions.builder()
-            .toolbarColor(ContextCompat.getColor(requireContext(), R.color.textColor))
-            .backgroundColor(ContextCompat.getColor(requireContext(), R.color.textColor))
+            .toolbarColor(ContextCompat.getColor(requireContext(), R.color.bgColor))
+            .backgroundColor(ContextCompat.getColor(requireContext(), R.color.bgColor))
+            .statusbarColor(ContextCompat.getColor(requireContext(), R.color.bgColor))
             .hint("Enter the location...")
             .country(Locale.getDefault())
             .build()
@@ -281,38 +318,39 @@ class MainFragment : Fragment() {
     private fun handleNetworkChanges() {
         Util.getNetworkLiveData(requireContext())
             .observe(viewLifecycleOwner, { isConnected ->
-                if (!isConnected) {
-                    loading.visibility = View.GONE
-                    textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
-                    networkStatusLayout.apply {
-                        alpha = 0f
-                        visibility = View.VISIBLE
-                        setBackgroundColor(getColorRes(R.color.colorStatusNotConnected))
-                        animate()
-                            .alpha(1f)
-                            .setDuration(Constants.ANIMATION_DURATION)
-                            .setListener(null)
-                    }
-                } else {
-                    if (parent_layout.visibility == View.INVISIBLE) {
-                        loading.visibility = View.VISIBLE
-                        getLocationUpdates()
-                    }
-                    textViewNetworkStatus.text = getString(R.string.text_connectivity)
-                    networkStatusLayout.apply {
-                        setBackgroundColor(getColorRes(R.color.colorStatusConnected))
+                binding.apply {
+                    if (!isConnected) {
+                        loading.gone()
+                        textViewNetworkStatus.text = getString(R.string.text_no_connectivity)
+                        networkStatusLayout.apply {
+                            alpha = 0f
+                            visible()
+                            setBackgroundColor(getColorRes(R.color.colorStatusNotConnected))
+                            animate()
+                                .alpha(1f)
+                                .setDuration(Constants.ANIMATION_DURATION)
+                                .setListener(null)
+                        }
+                    } else {
+                        if (parentLayout.visibility == View.INVISIBLE) {
+                            loading.visible()
+                            getLocationUpdates()
+                        }
+                        textViewNetworkStatus.text = getString(R.string.text_connectivity)
+                        networkStatusLayout.apply {
+                            setBackgroundColor(getColorRes(R.color.colorStatusConnected))
+                            animate()
+                                .alpha(0f)
+                                .setStartDelay(Constants.ANIMATION_DURATION)
+                                .setDuration(Constants.ANIMATION_DURATION)
+                                .setListener(object : AnimatorListenerAdapter() {
+                                    override fun onAnimationEnd(animation: Animator) {
+                                        gone()
+                                    }
+                                })
+                        }
 
-                        animate()
-                            .alpha(0f)
-                            .setStartDelay(Constants.ANIMATION_DURATION)
-                            .setDuration(Constants.ANIMATION_DURATION)
-                            .setListener(object : AnimatorListenerAdapter() {
-                                override fun onAnimationEnd(animation: Animator) {
-                                    visibility = View.GONE
-                                }
-                            })
                     }
-
                 }
             })
     }
@@ -333,9 +371,11 @@ class MainFragment : Fragment() {
     }
 
     private fun fetchData(latLng: LatLng) {
-        aqiViewModel.fetchAirQualityInfo(latLng.latitude, latLng.longitude)
-        aqiViewModel.fetchWeather(latLng.latitude, latLng.longitude)
-        aqiViewModel.fetchPrediction(latLng.latitude, latLng.longitude)
+        aqiViewModel.apply {
+            fetchAirQualityInfo(latLng.latitude, latLng.longitude)
+            fetchWeather(latLng.latitude, latLng.longitude)
+            fetchPrediction(latLng.latitude, latLng.longitude)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -361,10 +401,14 @@ class MainFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun onDestroy() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         super.onDestroy()
         Timber.e("destroyed")
     }
-
 }

@@ -2,119 +2,128 @@ package com.robin729.aqi.fragment
 
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponent
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
 import com.robin729.aqi.R
 import com.robin729.aqi.data.model.Resource
+import com.robin729.aqi.data.model.mapsAqi.StationData
+import com.robin729.aqi.databinding.FragmentMapsBinding
 import com.robin729.aqi.utils.PermissionUtils
 import com.robin729.aqi.utils.Util
+import com.robin729.aqi.utils.gone
+import com.robin729.aqi.utils.visible
 import com.robin729.aqi.viewmodel.MapsAqiViewModel
-import kotlinx.android.synthetic.main.fragment_maps.*
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
+class MapsFragment : Fragment(), OnMapReadyCallback {
 
-class MapsFragment : Fragment() {
+    private var _binding: FragmentMapsBinding? = null
+    private val binding get() = _binding!!
 
-    private val mapsAqiViewModel: MapsAqiViewModel by lazy {
-        ViewModelProvider(this).get(MapsAqiViewModel::class.java)
+    private lateinit var mapboxMap: MapboxMap
+    private val mapsAqiViewModel: MapsAqiViewModel by viewModels()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        Mapbox.getInstance(context, getString(R.string.mapbox_key))
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        Mapbox.getInstance(requireContext(), getString(R.string.mapbox_key))
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+        _binding = FragmentMapsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mapView.onCreate(savedInstanceState)
-
-        mapView.getMapAsync {
-
-            mapsAqiViewModel.mapsAqiData.observe(viewLifecycleOwner, Observer { mapsAqiData ->
-                when (mapsAqiData.status) {
-                    Resource.Status.SUCCESS -> {
-                        for (data in mapsAqiData.data?.data!!) {
-                            if (data.aqi == "-")
-                                continue
-                            it.addMarker(
-                                MarkerOptions()
-                                    .position(LatLng(data.lat, data.lon))
-                                    .title(data.station.name)
-                                    .snippet("AQI: ${data.aqi}")
-                                    .icon(
-                                        IconFactory.getInstance(requireContext()).fromBitmap(
-                                            Util.getIconForAirQualityIndex(
-                                                requireContext(),
-                                                data.aqi.toInt()
-                                            )!!
-                                        )
-                                    )
-                            )
-                        }
-                        progressBar.visibility = View.GONE
-                    }
-
-                    Resource.Status.LOADING -> {
-                        progressBar.visibility = View.VISIBLE
-                    }
-
-                    Resource.Status.ERROR -> {
-                        progressBar.visibility = View.GONE
-                        Toast.makeText(
-                            requireContext(),
-                            "Error in fetching data",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
+        binding.mapView.getMapAsync(this)
+        binding.mapView.onCreate(savedInstanceState)
+        mapsAqiViewModel.mapsAqiData.observe(viewLifecycleOwner, { mapsAqiData ->
+            when (mapsAqiData.status) {
+                Resource.Status.SUCCESS -> {
+                    mapsAqiData.data?.data?.let { it -> addMarkers(it) }
+                    binding.progressBar.gone()
                 }
-            })
 
-            it.setStyle(
-                Style.Builder()
-                    .fromUri("mapbox://styles/mapbox/streets-v9")
-            ) { style -> enableLocationComponent(it, style) }
+                Resource.Status.LOADING -> {
+                    binding.progressBar.visible()
+                }
 
+                Resource.Status.ERROR -> {
+                    binding.progressBar.gone()
+                    Toast.makeText(requireContext(), "Error in fetching data", Toast.LENGTH_LONG)
+                        .show()
+                }
+            }
+        })
+    }
 
+    override fun onMapReady(mapboxMap: MapboxMap) {
+        this.mapboxMap = mapboxMap
+        mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+            enableLocationComponent(style)
         }
+    }
 
+    private fun addMarkers(list: ArrayList<StationData>) {
+        for (data in list) {
+            if (data.aqi == "-")
+                continue
+            mapboxMap.addMarker(
+                MarkerOptions()
+                    .position(LatLng(data.lat, data.lon))
+                    .title(data.station.name)
+                    .snippet("AQI: ${data.aqi}")
+                    .icon(
+                        IconFactory.getInstance(requireContext()).fromBitmap(
+                            Util.getIconForAirQualityIndex(
+                                requireContext(),
+                                data.aqi.toInt()
+                            )
+                        )
+                    )
+            )
+        }
     }
 
     @SuppressLint("MissingPermission")
-    private fun enableLocationComponent(mapboxMap: MapboxMap, style: Style) {
+    private fun enableLocationComponent(style: Style) {
         if (PermissionUtils.isAccessFineLocationGranted(requireContext())) {
-            val locationComponent: LocationComponent = mapboxMap.locationComponent
-            locationComponent.activateLocationComponent(
-                LocationComponentActivationOptions.builder(requireContext(), style).build()
-            )
-            locationComponent.isLocationComponentEnabled = true
-            locationComponent.cameraMode = CameraMode.TRACKING
-            locationComponent.renderMode = RenderMode.COMPASS
+            mapboxMap.locationComponent.apply {
+                activateLocationComponent(
+                    LocationComponentActivationOptions.builder(requireContext(), style).build()
+                )
+                isLocationComponentEnabled = true
+                cameraMode = CameraMode.TRACKING
+                renderMode = RenderMode.COMPASS
+            }
+
         }
     }
 
     override fun onStart() {
         super.onStart()
-        mapView.onStart()
+        binding.mapView.onStart()
         if (!PermissionUtils.isLocationEnabled(requireContext())) {
             PermissionUtils.showGPSNotEnableDialog(requireContext())
         }
@@ -122,32 +131,34 @@ class MapsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
+        binding.mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
+        binding.mapView.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
+        binding.mapView.onStop()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView?.onLowMemory()
+        binding.mapView.onLowMemory()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mapView?.onDestroy()
+        binding.mapView.onDestroy()
+        _binding = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
     }
+
 
 }

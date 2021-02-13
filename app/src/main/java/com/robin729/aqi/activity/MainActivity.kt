@@ -9,17 +9,21 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.Navigation
 import androidx.navigation.ui.setupWithNavController
 import com.robin729.aqi.R
+import com.robin729.aqi.databinding.ActivityMainBinding
 import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.PermissionUtils
-import kotlinx.android.synthetic.main.activity_main.*
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && resources.configuration.uiMode.and(
                 Configuration.UI_MODE_NIGHT_MASK
@@ -30,14 +34,14 @@ class MainActivity : AppCompatActivity() {
         setupViews()
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         locationCheck()
     }
 
     private fun setupViews() {
         val navController = Navigation.findNavController(this, R.id.myNavHostFragment)
-        bottomNavView.setupWithNavController(navController)
+        binding.bottomNavView.setupWithNavController(navController)
     }
 
     private fun locationCheck() {
@@ -61,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             Constants.REQUEST_LOCATION_PERMISSION -> {
                 if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
 
-                    if (PermissionUtils.isAccessFineLocationGranted(this)) {
+                    if (PermissionUtils.isAccessFineLocationGranted(baseContext)) {
                         Timber.e("granted permission")
                     } else {
                         PermissionUtils.requestAccessFindLocationPermission(

@@ -3,25 +3,25 @@ package com.robin729.aqi.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.mapsAqi.MapsAqiData
 import com.robin729.aqi.data.repository.AqiRepository
 import com.robin729.aqi.data.repository.AqiRepositoryImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MapsAqiViewModel : ViewModel() {
+@HiltViewModel
+class MapsAqiViewModel @Inject constructor(private val aqiRepository: AqiRepository) : ViewModel() {
 
     private val _mapsAqiData = MutableLiveData<Resource<MapsAqiData>>()
 
     val mapsAqiData: LiveData<Resource<MapsAqiData>>
         get() = _mapsAqiData
-
-    private val aqiRepository: AqiRepository by lazy {
-        AqiRepositoryImpl()
-    }
 
     init {
         fetchData(
@@ -33,7 +33,7 @@ class MapsAqiViewModel : ViewModel() {
 
     private fun fetchData(latLngNE: LatLng, latLngSW: LatLng) {
         _mapsAqiData.value = Resource.Loading()
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             _mapsAqiData.postValue(aqiRepository.getMapsAqiData(latLngNE, latLngSW))
         }
     }

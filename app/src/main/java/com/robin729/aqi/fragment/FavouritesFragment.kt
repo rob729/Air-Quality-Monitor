@@ -5,23 +5,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.robin729.aqi.R
 import com.robin729.aqi.adapter.FavouritesListAdapter
 import com.robin729.aqi.data.model.Resource
+import com.robin729.aqi.databinding.FragmentFavouritesBinding
+import com.robin729.aqi.utils.gone
+import com.robin729.aqi.utils.visible
 import com.robin729.aqi.viewmodel.FavouritesViewModel
-import kotlinx.android.synthetic.main.fragment_favourites.*
+import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * A simple [Fragment] subclass.
- */
+@AndroidEntryPoint
 class FavouritesFragment : Fragment() {
 
-    private val favouritesViewModel: FavouritesViewModel by lazy {
-        ViewModelProvider(this).get(FavouritesViewModel::class.java)
-    }
+    private var _binding: FragmentFavouritesBinding? = null
+    private val binding get() = _binding!!
+
+    private val favouritesViewModel: FavouritesViewModel by viewModels()
 
     private val favouritesListAdapter: FavouritesListAdapter by lazy {
         FavouritesListAdapter()
@@ -30,37 +31,47 @@ class FavouritesFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favourites, container, false)
+        _binding = FragmentFavouritesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        favouritesRv.adapter = favouritesListAdapter
-        favouritesRv.layoutManager = LinearLayoutManager(context)
+        binding.apply {
+            favouritesRv.adapter = favouritesListAdapter
+            favouritesRv.layoutManager = LinearLayoutManager(context)
+        }
 
+        favouritesViewModel.favouritesData.observe(viewLifecycleOwner, {
+            binding.apply {
+                when (it.status) {
+                    Resource.Status.SUCCESS -> {
+                        favouritesListAdapter.submitList(it.data)
+                        progressBar.gone()
+                        errorTxt.gone()
+                    }
 
-        favouritesViewModel.favouritesData.observe(viewLifecycleOwner, Observer {
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    favouritesListAdapter.submitList(it.data)
-                    progressBar.visibility = View.GONE
-                    errorTxt.visibility = View.GONE
-                }
+                    Resource.Status.LOADING -> {
+                        progressBar.visible()
+                        errorTxt.gone()
+                    }
 
-                Resource.Status.LOADING -> {
-                    progressBar.visibility = View.VISIBLE
-                    errorTxt.visibility = View.GONE
-                }
-
-                Resource.Status.ERROR -> {
-                    progressBar.visibility = View.GONE
-                    errorTxt.visibility = View.VISIBLE
+                    Resource.Status.ERROR -> {
+                        progressBar.gone()
+                        errorTxt.visible()
+                    }
                 }
             }
+
         })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

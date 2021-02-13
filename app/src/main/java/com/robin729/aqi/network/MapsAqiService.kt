@@ -7,8 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.Url
 
 interface MapsAqiService {
-    @GET
-    fun getData(@Url url: String): Call<MapsAqiData>
 
     @GET
     suspend fun getMapsData(@Url url: String): Response<MapsAqiData>

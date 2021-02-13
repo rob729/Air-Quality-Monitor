@@ -1,63 +1,66 @@
 package com.robin729.aqi.data.repository
 
+import android.content.Context
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.robin729.aqi.R
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
 import com.robin729.aqi.data.model.favouritesAqi.Response
 import com.robin729.aqi.data.model.favouritesAqi.Result
 import com.robin729.aqi.data.model.mapsAqi.MapsAqiData
 import com.robin729.aqi.data.model.weather.WeatherData
-import com.robin729.aqi.network.retrofit.AqiApi
-import com.robin729.aqi.network.retrofit.MapsAqiApi
-import com.robin729.aqi.network.retrofit.WeathersApi
+import com.robin729.aqi.network.AqiService
+import com.robin729.aqi.network.MapsAqiService
+import com.robin729.aqi.network.WeatherService
 import com.robin729.aqi.utils.Constants
-import com.robin729.aqi.utils.StoreSession
+import com.robin729.aqi.utils.PreferenceRepository
 import com.robin729.aqi.utils.Util
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 
-class AqiRepositoryImpl : AqiRepository {
+class AqiRepositoryImpl(
+    context: Context,
+    private val preferenceRepository: PreferenceRepository,
+    private val aqiService: AqiService,
+    private val mapsAqiService: MapsAqiService,
+    private val weatherService: WeatherService
+) : AqiRepository {
 
-    private val favouritesLatLngList: HashSet<LatLng> by lazy {
-        StoreSession.readFavouritesLatLng(Constants.FAVOURITES_LIST)
-    }
-
-    private val apiKey = StoreSession.readString(Constants.API_KEY)
+    private val mapsKey = context.getString(R.string.MAPS_AQI_KEY)
+    private val weatherKey = context.getString(R.string.WEATHER_KEY)
 
     override suspend fun getAirQualityInfo(
         lat: Double,
         long: Double
     ): Resource<Info> = getDataFromService(
-        AqiApi.retrofitService.getAqiDataResponse(
+        aqiService.getAqiDataResponse(
             lat,
             long,
-            apiKey,
+            preferenceRepository.getApiKey().first() ?: "",
             Constants.FEATURES
         )
     )
 
     override suspend fun getWeather(lat: Double, long: Double): Resource<WeatherData> =
         getDataFromService(
-            WeathersApi.retrofitService.getWeatherData(
+            weatherService.getWeatherData(
                 lat,
                 long,
-                Constants.WEATHER_KEY,
+                weatherKey,
                 "metric"
             )
         )
 
     override suspend fun getMapsAqiData(latLngNE: LatLng, latLngSW: LatLng): Resource<MapsAqiData> =
-        getDataFromService(MapsAqiApi.retrofitService.getMapsData("?token=${Constants.MAPS_AQI_KEY}&latlng=${latLngNE.latitude},${latLngNE.longitude},${latLngSW.latitude},${latLngSW.longitude}"))
+        getDataFromService(mapsAqiService.getMapsData("?token=$mapsKey&latlng=${latLngNE.latitude},${latLngNE.longitude},${latLngSW.latitude},${latLngSW.longitude}"))
 
     override suspend fun getAqiPrediction(lat: Double, long: Double): Resource<Result> =
         getDataFromService(
-            AqiApi.retrofitService.getAqiForecastData(
+            aqiService.getAqiForecastData(
                 lat,
                 long,
-                apiKey,
-                4,
+                preferenceRepository.getApiKey().first() ?: "",
+                12,
                 Constants.FAVOURITES_FEATURES
             )
         )
@@ -65,15 +68,17 @@ class AqiRepositoryImpl : AqiRepository {
 
     override suspend fun getFavouritesListData(): Resource<ArrayList<com.robin729.aqi.data.model.favouritesAqi.Data>> =
         withContext(Dispatchers.IO) {
+            delay(50)
+            val favLatLngList = preferenceRepository.getFavLatLngList().first()
+            val calls: ArrayList<Deferred<Response>> = ArrayList()
+            val favouritesData: ArrayList<com.robin729.aqi.data.model.favouritesAqi.Data> =
+                ArrayList()
+            val locationNames: ArrayList<String> = ArrayList()
+            val apiKey = preferenceRepository.getApiKey().first() ?: ""
             return@withContext try {
-                val calls: ArrayList<Deferred<Response>> = ArrayList()
-                val favouritesData: ArrayList<com.robin729.aqi.data.model.favouritesAqi.Data> =
-                    ArrayList()
-                val locationNames: ArrayList<String> = ArrayList()
-
-                favouritesLatLngList.forEach {
+                favLatLngList.forEach {
                     calls.add(async {
-                        AqiApi.retrofitService.getAqiData(
+                        aqiService.getAqiData(
                             it.latitude,
                             it.longitude,
                             apiKey,
@@ -86,6 +91,7 @@ class AqiRepositoryImpl : AqiRepository {
                 calls.forEach {
                     favouritesData.add(it.await().data)
                     it.await().data.locName = locationNames[calls.indexOf(it)]
+                    it.await().data.latLng = favLatLngList.elementAt(calls.indexOf(it))
                 }
 
                 Resource.Success(favouritesData)

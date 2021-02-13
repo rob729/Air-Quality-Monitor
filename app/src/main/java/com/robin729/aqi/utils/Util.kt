@@ -2,7 +2,8 @@ package com.robin729.aqi.utils
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.net.ConnectivityManager
 import android.net.Network
@@ -15,19 +16,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.R
-import com.robin729.aqi.data.model.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
 
+
 object Util {
 
     lateinit var geocoder: Geocoder
+    val canvas = Canvas()
+    private var bitmap: Bitmap? = null
 
-    fun initGeocoder(context: Context){
-        if(!this::geocoder.isInitialized){
+    fun initGeocoder(context: Context) {
+        if (!this::geocoder.isInitialized) {
             geocoder = Geocoder(context, Locale.getDefault())
         }
     }
@@ -41,18 +44,20 @@ object Util {
 
     private val networkLiveData: MutableLiveData<Boolean> = MutableLiveData(false)
 
-    fun Fragment.getColorRes(@ColorRes id: Int) = ContextCompat.getColor(context!!, id)
+    fun Fragment.getColorRes(@ColorRes id: Int) = ContextCompat.getColor(requireContext(), id)
 
     fun getNetworkLiveData(context: Context): LiveData<Boolean> {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network?) {
+            override fun onAvailable(network: Network) {
+                super.onAvailable(network)
                 networkLiveData.postValue(true)
             }
 
-            override fun onLost(network: Network?) {
+            override fun onLost(network: Network) {
+                super.onLost(network)
                 networkLiveData.postValue(false)
             }
         }
@@ -111,7 +116,7 @@ object Util {
         return sdf.format(calendar.time)
     }
 
-    fun getIconForAirQualityIndex(context: Context, aqi: Int): Bitmap? {
+    fun getIconForAirQualityIndex(context: Context, aqi: Int): Bitmap {
         val iconDrawable: Int = when (aqi) {
             in 0..50 -> {
                 R.drawable.good_map_marker
@@ -135,7 +140,22 @@ object Util {
                 R.drawable.severe_map_marker
             }
         }
-        return BitmapFactory.decodeResource(context.resources, iconDrawable)
+        return getBitmap(ContextCompat.getDrawable(context, iconDrawable)!!)!!
+    }
+
+
+    private fun getBitmap(drawable: Drawable): Bitmap? {
+        if (bitmap == null) {
+            bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+        }
+        canvas.setBitmap(bitmap)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        drawable.draw(canvas)
+        return bitmap
     }
 
     fun getFaceBasedOnAqi(aqi: Int): Int {
@@ -158,11 +178,13 @@ object Util {
             in 401..500 -> {
                 R.drawable.ic_face_purple
             }
-            else -> { R.drawable.ic_face_purple }
+            else -> {
+                R.drawable.ic_face_purple
+            }
         }
     }
 
-    fun getAQICategory(aqi: Int): String{
+    fun getAQICategory(aqi: Int): String {
         return when (aqi) {
             in 0..50 -> {
                 "Good"
@@ -182,11 +204,13 @@ object Util {
             in 401..500 -> {
                 "Severe"
             }
-            else -> { "Severe" }
+            else -> {
+                "Severe"
+            }
         }
     }
 
-    fun getBackgroundColourBasedOnAqi(aqi: Int): Int{
+    fun getBackgroundColourBasedOnAqi(aqi: Int): Int {
         return when (aqi) {
             in 0..50 -> {
                 R.color.ic_dark_green
@@ -206,25 +230,32 @@ object Util {
             in 401..500 -> {
                 R.color.ic_purple
             }
-            else -> { R.color.ic_purple }
+            else -> {
+                R.color.ic_purple
+            }
         }
     }
 
-    suspend fun getLocationString(latLng: LatLng): String = withContext(Dispatchers.IO){
+
+    suspend fun getLocationString(latLng: LatLng): String = withContext(Dispatchers.IO) {
         return@withContext try {
             val location = geocoder.getFromLocation(
                 latLng.latitude,
                 latLng.longitude,
                 1
             )[0]
-            if((location.subLocality.isNullOrBlank())){
+            if ((location.subLocality.isNullOrBlank())) {
                 location.subAdminArea + ", " + location.adminArea
             } else {
-                location.subLocality.substring(0, min(location.subLocality.length, 20)) + ", " + location.subAdminArea
+                location.subLocality.substring(
+                    0,
+                    min(location.subLocality.length, 20)
+                ) + ", " + location.subAdminArea
             }
         } catch (exception: Exception) {
-           "  "
+            "  "
         }
     }
+
 
 }

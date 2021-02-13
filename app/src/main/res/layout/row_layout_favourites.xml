@@ -1,77 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-    <androidx.cardview.widget.CardView
-        android:id="@+id/head_card"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        app:cardCornerRadius="12dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/head_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginEnd="12dp"
+    app:cardCornerRadius="12dp">
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="wrap_content"
-            android:layout_height="120dp"
-            android:orientation="horizontal">
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ic_face"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:background="@color/ic_dark_green"
+            android:src="@drawable/ic_face_green" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <ImageView
-                android:id="@+id/ic_face"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:background="@color/ic_dark_green"
-                android:src="@drawable/ic_face_green" />
-
-            <RelativeLayout
+                android:id="@+id/other_side_face_color"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:alpha="0.7"
+                android:background="@color/ic_dark_green" />
 
-                <ImageView
-                    android:id="@+id/other_side_face_color"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:alpha="0.7"
-                    android:background="@color/ic_dark_green" />
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                app:drawableStartCompat="@drawable/ic_location_marker"
+                android:fontFamily="@font/montserrat"
+                android:paddingTop="8dp"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                tools:text="New Delhi, India" />
 
-                <TextView
-                    android:id="@+id/location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:drawableStart="@drawable/ic_location_marker"
-                    android:fontFamily="@font/montserrat"
-                    android:paddingTop="8dp"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    tools:text="New Delhi, India" />
+            <TextView
+                android:id="@+id/aqi_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/location"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                tools:text="AQI: 114" />
 
-                <TextView
-                    android:id="@+id/aqi_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/location"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/montserrat"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    tools:text="AQI: 114" />
+            <TextView
+                android:id="@+id/category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/aqi_value"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                tools:text="Moderate" />
 
-                <TextView
-                    android:id="@+id/category"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/aqi_value"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/montserrat"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    tools:text="Moderate" />
+        </RelativeLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.cardview.widget.CardView>
 
-            </RelativeLayout>
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.cardview.widget.CardView>
-</layout>

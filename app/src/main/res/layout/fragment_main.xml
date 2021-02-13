@@ -495,7 +495,7 @@
                             android:layout_marginTop="6dp"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/textColor"
+                            android:textColor="@android:color/black"
                             android:fontFamily="@font/montserrat"
                             tools:text="320" />
 
@@ -526,7 +526,7 @@
                             android:layout_marginTop="6dp"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/textColor"
+                            android:textColor="@android:color/black"
                             android:fontFamily="@font/montserrat"
                             tools:text="320" />
 
@@ -557,7 +557,7 @@
                             android:layout_marginTop="6dp"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/textColor"
+                            android:textColor="@android:color/black"
                             android:fontFamily="@font/montserrat"
                             tools:text="320" />
 
@@ -588,7 +588,7 @@
                             android:layout_marginTop="6dp"
                             android:textStyle="bold"
                             android:textSize="16sp"
-                            android:textColor="@color/textColor"
+                            android:textColor="@android:color/black"
                             android:fontFamily="@font/montserrat"
                             tools:text="320" />
 

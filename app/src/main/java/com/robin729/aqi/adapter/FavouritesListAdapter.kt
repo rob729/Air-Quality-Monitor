@@ -1,13 +1,18 @@
 package com.robin729.aqi.adapter
 
 import android.graphics.Color
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.navigation.NavOptions
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.robin729.aqi.R
 import com.robin729.aqi.databinding.RowLayoutFavouritesBinding
 import com.robin729.aqi.data.model.favouritesAqi.Data
+import com.robin729.aqi.utils.Constants
 import com.robin729.aqi.utils.Util
 
 
@@ -31,12 +36,21 @@ class FavouritesListAdapter :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: Data) {
-            binding.location.text = item.locName
-            binding.aqiValue.text = "AQI: ${item.index.details.aqi}"
-            binding.category.text = item.index.details.category
-            binding.icFace.setBackgroundColor(Color.parseColor(item.index.details.color))
-            binding.icFace.setImageResource(Util.getFaceBasedOnAqi(item.index.details.aqi))
-            binding.otherSideFaceColor.setBackgroundColor(Color.parseColor(item.index.details.color))
+            binding.apply {
+                location.text = item.locName
+                aqiValue.text = "AQI: ${item.index.details.aqi}"
+                category.text = item.index.details.category
+                icFace.setBackgroundColor(Color.parseColor(item.index.details.color))
+                icFace.setImageResource(Util.getFaceBasedOnAqi(item.index.details.aqi))
+                otherSideFaceColor.setBackgroundColor(Color.parseColor(item.index.details.color))
+                headCard.setOnClickListener {
+                    val bundle = Bundle()
+                    bundle.putParcelable(Constants.FAV_LAT_LNG, item.latLng)
+                    val navOption = NavOptions.Builder().setPopUpTo(R.id.mainFragment, true).build()
+                    root.findNavController().navigate(R.id.mainFragment, bundle, navOption)
+                }
+            }
+
         }
     }
 

@@ -3,6 +3,7 @@ package com.robin729.aqi.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.robin729.aqi.data.model.Resource
 import com.robin729.aqi.data.model.aqi.Info
@@ -11,12 +12,14 @@ import com.robin729.aqi.data.model.weather.WeatherData
 import com.robin729.aqi.data.repository.AqiRepository
 import com.robin729.aqi.data.repository.AqiRepositoryImpl
 import com.robin729.aqi.utils.Util
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class AqiViewModel : ViewModel() {
+@HiltViewModel
+class AqiViewModel @Inject constructor(private val aqiRepository: AqiRepository) : ViewModel() {
 
     private val _aqi = MutableLiveData<Resource<Info>>()
 
@@ -38,13 +41,9 @@ class AqiViewModel : ViewModel() {
     val location: LiveData<String>
         get() = _location
 
-    private val aqiRepository: AqiRepository by lazy {
-        AqiRepositoryImpl()
-    }
-
     fun fetchAirQualityInfo(lat: Double, long: Double) {
         _aqi.value = Resource.Loading()
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             _aqi.postValue(aqiRepository.getAirQualityInfo(lat, long))
             _location.postValue(Util.getLocationString(LatLng(lat, long)))
         }
@@ -52,13 +51,13 @@ class AqiViewModel : ViewModel() {
 
     fun fetchWeather(lat: Double, long: Double) {
         _weather.value = Resource.Loading()
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             _weather.postValue(aqiRepository.getWeather(lat, long))
         }
     }
 
     fun fetchPrediction(lat: Double, long: Double){
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             _predictionData.postValue(aqiRepository.getAqiPrediction(lat,long))
         }
     }

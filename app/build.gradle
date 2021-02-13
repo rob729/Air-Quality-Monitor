@@ -2,21 +2,20 @@ apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'androidx.navigation.safeargs'
-apply plugin: 'com.google.gms.google-services'
+apply plugin: 'dagger.hilt.android.plugin'
 
 
 def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.robin729.aqi"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -34,6 +33,11 @@ android {
     buildTypes {
         debug {
             resValue("string", "mapbox_key", localProperties['mapboxKey'])
+            resValue("string", "back4app_client_key", localProperties['back4appClientKey'])
+            resValue("string", "back4app_app_id", localProperties['back4appAppId'])
+            resValue("string", "MAPS_AQI_KEY", localProperties['MAPS_AQI_KEY'])
+            resValue("string", "WEATHER_KEY", localProperties['WEATHER_KEY'])
+
         }
         release {
             minifyEnabled false
@@ -46,23 +50,24 @@ android {
     }
 
     buildFeatures {
-        dataBinding true
+        viewBinding true
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.3.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     //material design
-    implementation 'com.google.android.material:material:1.3.0-alpha03'
+    implementation 'com.google.android.material:material:1.3.0-rc01'
 
     // cardview
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -71,28 +76,37 @@ dependencies {
     implementation 'com.github.jd-alexander:LikeButton:0.2.3'
 
     // Retrofit for networking
-    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     // for location services
     implementation 'com.google.android.gms:play-services-location:17.1.0'
 
     //for lottie(animation)
-    implementation 'com.airbnb.android:lottie:3.4.0'
+    implementation 'com.airbnb.android:lottie:3.4.2'
 
     // navigation components
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.2.2'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.2.2'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.3.3'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
 
     //for mapbox
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.1.0'
     implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-places-v9:0.12.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v7:0.2.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:0.8.0'
 
     implementation "com.github.parse-community.Parse-SDK-Android:parse:1.25.0"
     implementation "com.github.parse-community.Parse-SDK-Android:ktx:1.25.0"
+
+    // preference datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha06"
+
+    //hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
 
