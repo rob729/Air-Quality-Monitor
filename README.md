@@ -1,0 +1,2 @@
+# Air-Quality-Monitor
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6080e2b8b17432d874796d8e19384d0)](https://app.codacy.com/gh/rob729/Air-Quality-Monitor?utm_source=github.com&utm_medium=referral&utm_content=rob729/Air-Quality-Monitor&utm_campaign=Badge_Grade)
