@@ -1,13 +1,13 @@
-# Air-Quality-Monitor
+# Air Quality Monitor
+[![Build Status](https://github.com/rob729/Air-Quality-Monitor/workflows/Check/badge.svg)](https://github.com/rob729/Air-Quality-Monitor/actions)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa6ed86f86de4181b99165c16a4de65a)](https://www.codacy.com/gh/rob729/Air-Quality-Monitor/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rob729/Air-Quality-Monitor&amp;utm_campaign=Badge_Grade)
-[![Build Status](https://www.travis-ci.com/rob729/Air-Quality-Monitor.svg?branch=master)](https://www.travis-ci.com/rob729/Air-Quality-Monitor)
 [![Maintainability](https://api.codeclimate.com/v1/badges/bd315d1c1dee5ba045bf/maintainability)](https://codeclimate.com/github/rob729/Air-Quality-Monitor/maintainability)
 [![Platform](https://img.shields.io/badge/platform-android-blue.svg)](http://developer.android.com/index.html)
 [![API](https://img.shields.io/badge/API-20%2B-blue.svg?style=flat)](https://android-arsenal.com/api?level=20)
 
 ### Real-time Air Quality Index with local updates, pollutant concentration, recommendations, micro-weather data and AQI prediction.
 
-Our key features:
+Key Features:
 
 	•	Real-time quantified air quality index with risk evaluation
 	•	Live map view of your local & nearby air quality index
